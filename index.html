@@ -1,1231 +1,1454 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0,
+               viewport-fit=cover">
 
-  <title>わが家の記録帳</title>
+<meta name="theme-color" content="#f7f7f5">
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<title>わが家の記録帳</title>
 
-    body {
-      margin: 0;
-      font-family:
+<style>
+/* =========================================================
+   基本設定
+========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background: #f5f5f3;
+    color: #333;
+    font-family:
         -apple-system,
         BlinkMacSystemFont,
-        "Hiragino Kaku Gothic ProN",
+        "Noto Sans JP",
         "Yu Gothic",
-        Meiryo,
         sans-serif;
-      background: #f6f8f8;
-      color: #253238;
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   PC サイドバー
+========================================================= */
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 230px;
+    height: 100vh;
+
+    background: #ffffff;
+    border-right: 1px solid #e8e8e5;
+
+    padding: 24px 16px;
+
+    z-index: 100;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 30px;
+}
+
+.logo small {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    color: #999;
+    font-weight: 400;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 5px;
+
+    border: none;
+    background: transparent;
+
+    border-radius: 10px;
+    color: #555;
+    text-align: left;
+
+    transition: 0.2s;
+}
+
+.nav-item:hover {
+    background: #f3f3f1;
+}
+
+.nav-item.active {
+    background: #eeeeeb;
+    color: #222;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   メイン
+========================================================= */
+
+.main {
+    margin-left: 230px;
+    padding: 28px 34px 60px;
+    max-width: 1500px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 24px;
+}
+
+.date {
+    color: #888;
+    font-size: 13px;
+}
+
+.header-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+.weather {
+    background: white;
+    border-radius: 14px;
+    padding: 12px 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.weather-icon {
+    font-size: 27px;
+}
+
+.weather-temp {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   ヒーロー
+========================================================= */
+
+.hero {
+    min-height: 220px;
+
+    border-radius: 20px;
+
+    padding: 30px;
+
+    display: flex;
+    align-items: flex-end;
+
+    background:
+        linear-gradient(
+            rgba(0,0,0,0.05),
+            rgba(0,0,0,0.35)
+        ),
+        url("https://images.unsplash.com/photo-1504150558240-0b4fd8946624?auto=format&fit=crop&w=1600&q=80")
+        center / cover;
+
+    color: white;
+
+    margin-bottom: 24px;
+
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+.hero-content {
+    max-width: 600px;
+}
+
+.hero h1 {
+    margin: 0 0 8px;
+    font-size: 30px;
+}
+
+.hero p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+
+/* =========================================================
+   クイックカード
+========================================================= */
+
+.quick-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 14px;
+
+    margin-bottom: 24px;
+}
+
+.quick-card {
+    background: white;
+    border-radius: 16px;
+
+    padding: 18px;
+
+    border: none;
+
+    text-align: left;
+
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+
+    transition: transform 0.15s;
+}
+
+.quick-card:hover {
+    transform: translateY(-2px);
+}
+
+.quick-icon {
+    font-size: 25px;
+    margin-bottom: 12px;
+}
+
+.quick-title {
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.quick-desc {
+    font-size: 12px;
+    color: #999;
+}
+
+
+/* =========================================================
+   ダッシュボード
+========================================================= */
+
+.dashboard {
+    display: grid;
+
+    grid-template-columns:
+        1.2fr
+        0.8fr;
+
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    border-radius: 18px;
+    padding: 22px;
+
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.card-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 18px;
+
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.card-link {
+    font-size: 12px;
+    color: #888;
+    background: none;
+    border: none;
+}
+
+
+/* =========================================================
+   今日の予定
+========================================================= */
+
+.schedule-item {
+    display: flex;
+    gap: 14px;
+
+    padding: 12px 0;
+
+    border-bottom: 1px solid #eee;
+}
+
+.schedule-item:last-child {
+    border-bottom: none;
+}
+
+.schedule-time {
+    width: 50px;
+    color: #888;
+    font-size: 13px;
+}
+
+.schedule-title {
+    font-weight: 600;
+}
+
+.schedule-note {
+    color: #999;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+
+/* =========================================================
+   Todo
+========================================================= */
+
+.todo {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 10px 0;
+}
+
+.todo input {
+    width: 19px;
+    height: 19px;
+}
+
+.todo.done span {
+    color: #aaa;
+    text-decoration: line-through;
+}
+
+.add-button {
+    width: 100%;
+
+    margin-top: 12px;
+
+    padding: 12px;
+
+    border: 1px solid #ddd;
+    border-radius: 10px;
+
+    background: #fafafa;
+}
+
+
+/* =========================================================
+   子ども
+========================================================= */
+
+.children {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 12px;
+}
+
+.child {
+    background: #fafaf8;
+
+    border-radius: 14px;
+
+    padding: 16px;
+}
+
+.child-name {
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.child-age {
+    font-size: 12px;
+    color: #999;
+
+    margin-top: 3px;
+}
+
+.child-note {
+    margin-top: 12px;
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   最近の記録
+========================================================= */
+
+.record {
+    padding: 13px 0;
+
+    border-bottom: 1px solid #eee;
+}
+
+.record:last-child {
+    border-bottom: none;
+}
+
+.record-date {
+    color: #999;
+    font-size: 11px;
+}
+
+.record-title {
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.record-body {
+    margin-top: 4px;
+    color: #777;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   家のメンテナンス
+========================================================= */
+
+.maintenance {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 13px 0;
+
+    border-bottom: 1px solid #eee;
+}
+
+.maintenance:last-child {
+    border-bottom: none;
+}
+
+.maintenance-name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.maintenance-date {
+    color: #999;
+    font-size: 11px;
+}
+
+.badge {
+    font-size: 11px;
+
+    padding: 5px 9px;
+
+    border-radius: 20px;
+
+    background: #f0f0ed;
+}
+
+
+/* =========================================================
+   スマホ下部ナビ
+========================================================= */
+
+.mobile-nav {
+    display: none;
+}
+
+
+/* =========================================================
+   ＋ボタン
+========================================================= */
+
+.floating-button {
+    position: fixed;
+
+    right: 22px;
+    bottom: 28px;
+
+    width: 58px;
+    height: 58px;
+
+    border-radius: 50%;
+
+    border: none;
+
+    background: #222;
+    color: white;
+
+    font-size: 30px;
+
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+
+    z-index: 200;
+}
+
+
+/* =========================================================
+   モバイル
+========================================================= */
+
+@media (max-width: 760px) {
+
+    body {
+        padding-bottom:
+            calc(72px + env(safe-area-inset-bottom));
     }
 
-    button {
-      font: inherit;
-    }
-
-    /* =========================
-       全体
-    ========================= */
-
-    .app {
-      min-height: 100vh;
-      display: flex;
-    }
-
-    /* =========================
-       サイドバー
-    ========================= */
-
+    /* サイドバーを消す */
     .sidebar {
-      width: 230px;
-      background: #ffffff;
-      border-right: 1px solid #e5eaea;
-      padding: 22px 14px;
-      flex-shrink: 0;
+        display: none;
     }
 
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 10px 24px;
-      font-size: 19px;
-      font-weight: 700;
-    }
-
-    .logo-icon {
-      font-size: 27px;
-    }
-
-    .nav {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .nav-item {
-      border: 0;
-      background: transparent;
-      width: 100%;
-      padding: 11px 13px;
-      border-radius: 12px;
-      text-align: left;
-      cursor: pointer;
-      color: #526066;
-      transition: 0.15s;
-    }
-
-    .nav-item:hover {
-      background: #f1f5f5;
-    }
-
-    .nav-item.active {
-      background: #dff5f6;
-      color: #1d6e75;
-      font-weight: 700;
-    }
-
-    .family {
-      margin-top: 28px;
-      padding: 0 10px;
-    }
-
-    .family-title {
-      font-size: 12px;
-      color: #879296;
-      margin-bottom: 12px;
-    }
-
-    .family-member {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      padding: 7px 0;
-      font-size: 13px;
-    }
-
-    .avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: #edf3f3;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    /* =========================
-       メイン
-    ========================= */
-
+    /* メイン */
     .main {
-      flex: 1;
-      min-width: 0;
+        margin-left: 0;
+
+        padding:
+            18px
+            16px
+            90px;
     }
 
+    /* ヘッダー */
     .header {
-      height: 68px;
-      background: white;
-      border-bottom: 1px solid #e5eaea;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 30px;
+        align-items: flex-start;
     }
 
-    .date {
-      color: #6d797d;
-      font-size: 14px;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 20px;
+    .header-title {
+        font-size: 22px;
     }
 
     .weather {
-      color: #6d797d;
-      font-size: 13px;
+        padding: 9px 12px;
     }
 
-    .user-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #e7eeee;
-      display: grid;
-      place-items: center;
+    .weather-temp {
+        font-size: 15px;
     }
 
-    .content {
-      padding: 24px 30px 50px;
-      max-width: 1500px;
-      margin: 0 auto;
+    .weather-icon {
+        font-size: 21px;
     }
 
-    /* =========================
-       ヒーロー
-    ========================= */
-
+    /* ヒーロー */
     .hero {
-      min-height: 180px;
-      border-radius: 18px;
-      background:
-        linear-gradient(
-          90deg,
-          rgba(24, 66, 61, 0.78),
-          rgba(24, 66, 61, 0.15)
-        ),
-        url("https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1600&q=80")
-        center / cover;
-      padding: 30px;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      overflow: hidden;
+        min-height: 180px;
+
+        padding: 22px;
+
+        border-radius: 17px;
     }
 
     .hero h1 {
-      margin: 0 0 8px;
-      font-size: 27px;
+        font-size: 24px;
     }
 
     .hero p {
-      margin: 0;
-      opacity: 0.9;
+        font-size: 13px;
     }
 
-    .today-plan {
-      width: 340px;
-      background: rgba(255,255,255,0.95);
-      color: #293438;
-      border-radius: 15px;
-      padding: 16px 18px;
-    }
-
-    .today-plan h3 {
-      margin: 0 0 12px;
-      font-size: 15px;
-    }
-
-    .plan-row {
-      display: flex;
-      gap: 12px;
-      padding: 5px 0;
-      font-size: 13px;
-    }
-
-    .plan-time {
-      width: 45px;
-      color: #778286;
-    }
-
-    /* =========================
-       クイックカード
-    ========================= */
-
+    /* クイック */
     .quick-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 14px;
-      margin-top: 18px;
+        grid-template-columns:
+            repeat(2, 1fr);
+
+        gap: 10px;
     }
 
     .quick-card {
-      background: white;
-      border: 1px solid #e5eaea;
-      border-radius: 14px;
-      padding: 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-
-    .quick-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+        padding: 15px;
+        min-height: 105px;
     }
 
     .quick-icon {
-      font-size: 28px;
-      margin-bottom: 8px;
+        font-size: 22px;
     }
 
-    .quick-card strong {
-      display: block;
-      font-size: 14px;
-    }
-
-    .quick-card span {
-      display: block;
-      font-size: 11px;
-      color: #7d888c;
-      margin-top: 4px;
-    }
-
-    /* =========================
-       メイン3カラム
-    ========================= */
-
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 1.1fr 0.9fr;
-      gap: 18px;
-      margin-top: 18px;
+    /* ダッシュボード */
+    .dashboard {
+        grid-template-columns: 1fr;
+        gap: 14px;
     }
 
     .card {
-      background: white;
-      border: 1px solid #e5eaea;
-      border-radius: 15px;
-      padding: 20px;
+        padding: 18px;
+
+        border-radius: 16px;
     }
 
-    .card-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-    }
-
-    .card-title h2 {
-      font-size: 17px;
-      margin: 0;
-    }
-
-    .more {
-      color: #218ca0;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    /* =========================
-       TODO
-    ========================= */
-
-    .todo-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid #f0f2f2;
-      font-size: 13px;
-    }
-
-    .todo-item:last-child {
-      border-bottom: 0;
-    }
-
-    .todo-item input {
-      width: 17px;
-      height: 17px;
-      accent-color: #49a8a9;
-    }
-
-    .todo-item.done span {
-      text-decoration: line-through;
-      color: #a0aaad;
-    }
-
-    .add-todo {
-      margin-top: 10px;
-      border: 0;
-      background: transparent;
-      color: #218ca0;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
-    /* =========================
-       子ども
-    ========================= */
-
-    .child {
-      display: flex;
-      gap: 12px;
-      padding: 9px 0;
-      border-bottom: 1px solid #f0f2f2;
-    }
-
-    .child:last-child {
-      border-bottom: 0;
-    }
-
-    .child-avatar {
-      width: 52px;
-      height: 52px;
-      border-radius: 12px;
-      background: #eef4f4;
-      display: grid;
-      place-items: center;
-      font-size: 25px;
-    }
-
-    .child-info strong {
-      display: block;
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-
-    .child-info small {
-      display: block;
-      color: #798589;
-      line-height: 1.6;
-      font-size: 11px;
-    }
-
-    /* =========================
-       今後の予定
-    ========================= */
-
-    .schedule-item {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid #f0f2f2;
-    }
-
-    .schedule-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #68b9b5;
-      flex-shrink: 0;
-    }
-
-    .schedule-date {
-      width: 45px;
-      font-size: 11px;
-      color: #788387;
-    }
-
-    .schedule-name {
-      font-size: 13px;
-    }
-
-    /* =========================
-       最近の記録
-    ========================= */
-
-    .records {
-      margin-top: 18px;
-    }
-
-    .record {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      padding: 13px 0;
-      border-bottom: 1px solid #edf0f0;
-    }
-
-    .record:last-child {
-      border-bottom: 0;
-    }
-
-    .record-tag {
-      min-width: 65px;
-      padding: 5px 8px;
-      border-radius: 20px;
-      text-align: center;
-      font-size: 11px;
-      font-weight: 700;
-      background: #e4f4f3;
-      color: #277f7b;
-    }
-
-    .record-date {
-      width: 85px;
-      color: #899296;
-      font-size: 11px;
-    }
-
-    .record-content {
-      flex: 1;
-    }
-
-    .record-content strong {
-      display: block;
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-
-    .record-content span {
-      color: #788387;
-      font-size: 12px;
-    }
-
-    .record-arrow {
-      color: #a0aaad;
-    }
-
-    /* =========================
-       右側
-    ========================= */
-
-    .side-card {
-      margin-bottom: 18px;
-    }
-
-    .maintenance-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 9px 0;
-      border-bottom: 1px solid #f0f2f2;
-      font-size: 12px;
-    }
-
-    .maintenance-item:last-child {
-      border-bottom: 0;
-    }
-
-    .maintenance-date {
-      color: #7c878b;
-    }
-
-    .quick-actions {
-      display: grid;
-      gap: 8px;
-    }
-
-    .action {
-      border: 0;
-      padding: 11px;
-      border-radius: 9px;
-      cursor: pointer;
-      text-align: left;
-      font-size: 12px;
-    }
-
-    .action.record {
-      background: #e1f6ee;
-      color: #19745c;
-    }
-
-    .action.photo {
-      background: #e5f1fc;
-      color: #2d6fa5;
-    }
-
-    .action.memo {
-      background: #fff2d7;
-      color: #92650d;
-    }
-
-    .expense {
-      font-size: 28px;
-      font-weight: 700;
-      margin: 4px 0 12px;
-    }
-
-    .expense small {
-      font-size: 11px;
-      color: #7f898d;
-      font-weight: normal;
-    }
-
-    .expense-change {
-      font-size: 12px;
-      color: #d05c58;
-    }
-
-    /* =========================
-       レスポンシブ
-    ========================= */
-
-    @media (max-width: 1100px) {
-      .sidebar {
-        width: 190px;
-      }
-
-      .quick-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .dashboard-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .dashboard-grid > :last-child {
-        grid-column: span 2;
-      }
-    }
-
-    @media (max-width: 760px) {
-      .sidebar {
-        display: none;
-      }
-
-      .header {
-        padding: 0 16px;
-      }
-
-      .content {
-        padding: 15px;
-      }
-
-      .hero {
-        padding: 20px;
-        min-height: auto;
-        flex-direction: column;
-        gap: 18px;
-      }
-
-      .hero h1 {
-        font-size: 22px;
-      }
-
-      .today-plan {
-        width: 100%;
-      }
-
-      .quick-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .dashboard-grid {
+    /* 子ども */
+    .children {
         grid-template-columns: 1fr;
-      }
-
-      .dashboard-grid > :last-child {
-        grid-column: auto;
-      }
-
-      .record {
-        align-items: flex-start;
-      }
-
-      .record-date {
-        width: auto;
-      }
     }
-  </style>
+
+    /* Todo */
+    .todo {
+        min-height: 44px;
+    }
+
+    .todo input {
+        width: 21px;
+        height: 21px;
+    }
+
+    /* 下部ナビ */
+    .mobile-nav {
+        position: fixed;
+
+        display: flex;
+
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        height:
+            calc(64px + env(safe-area-inset-bottom));
+
+        padding-bottom:
+            env(safe-area-inset-bottom);
+
+        background: rgba(255,255,255,0.96);
+
+        border-top: 1px solid #e9e9e6;
+
+        z-index: 150;
+
+        justify-content: space-around;
+        align-items: flex-start;
+    }
+
+    .mobile-nav-item {
+        flex: 1;
+
+        border: none;
+        background: none;
+
+        padding-top: 10px;
+
+        color: #999;
+
+        font-size: 10px;
+
+        text-align: center;
+    }
+
+    .mobile-nav-item span {
+        display: block;
+
+        font-size: 21px;
+
+        margin-bottom: 3px;
+    }
+
+    .mobile-nav-item.active {
+        color: #222;
+        font-weight: 600;
+    }
+
+    /* ＋ボタン */
+    .floating-button {
+        right: 50%;
+
+        transform: translateX(50%);
+
+        bottom:
+            calc(44px + env(safe-area-inset-bottom));
+
+        width: 58px;
+        height: 58px;
+    }
+}
+
+
+/* =========================================================
+   小さいスマホ
+========================================================= */
+
+@media (max-width: 380px) {
+
+    .main {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .quick-card {
+        padding: 13px;
+    }
+
+    .hero {
+        min-height: 160px;
+    }
+
+    .header-title {
+        font-size: 20px;
+    }
+}
+
+</style>
 </head>
+
 
 <body>
 
-<div class="app">
 
-  <!-- =====================
-       サイドバー
-  ====================== -->
+<!-- ======================================================
+     PCサイドバー
+====================================================== -->
 
-  <aside class="sidebar">
+<aside class="sidebar">
 
     <div class="logo">
-      <span class="logo-icon">🏠</span>
-      <span>わが家の記録帳</span>
+        🏠 わが家の記録帳
+        <small>Family Dashboard</small>
     </div>
 
-    <nav class="nav">
+    <button class="nav-item active">
+        🏠
+        ホーム
+    </button>
 
-      <button class="nav-item active">⌂　ホーム</button>
-      <button class="nav-item">▣　カレンダー</button>
-      <button class="nav-item">♧　子どもたちの記録</button>
-      <button class="nav-item">⌂　家の管理</button>
-      <button class="nav-item">￥　家計・支出</button>
-      <button class="nav-item">♧　旅行・おでかけ</button>
-      <button class="nav-item">🌱　庭・芝生</button>
-      <button class="nav-item">🐈　ペット</button>
-      <button class="nav-item">▧　写真・思い出</button>
-      <button class="nav-item">✎　メモ・Todo</button>
-      <button class="nav-item">⚙　各種設定</button>
+    <button class="nav-item">
+        📅
+        カレンダー
+    </button>
 
-    </nav>
+    <button class="nav-item">
+        👧
+        子どもたちの記録
+    </button>
 
-    <div class="family">
+    <button class="nav-item">
+        🏡
+        家の管理
+    </button>
 
-      <div class="family-title">家族</div>
+    <button class="nav-item">
+        💰
+        家計・支出
+    </button>
 
-      <div class="family-member">
-        <div class="avatar">👨</div>
-        <span>あきら（パパ）</span>
-      </div>
+    <button class="nav-item">
+        🚗
+        旅行・おでかけ
+    </button>
 
-      <div class="family-member">
-        <div class="avatar">👩</div>
-        <span>ママ</span>
-      </div>
+    <button class="nav-item">
+        🌱
+        庭・芝生
+    </button>
 
-      <div class="family-member">
-        <div class="avatar">👧</div>
-        <span>長女</span>
-      </div>
+    <button class="nav-item">
+        🐈
+        ペット
+    </button>
 
-      <div class="family-member">
-        <div class="avatar">👶</div>
-        <span>次女</span>
-      </div>
+    <button class="nav-item">
+        📷
+        写真・思い出
+    </button>
 
-      <div class="family-member">
-        <div class="avatar">🐈</div>
-        <span>猫</span>
-      </div>
+    <button class="nav-item">
+        📝
+        メモ・Todo
+    </button>
 
-    </div>
+    <button class="nav-item">
+        ⚙️
+        設定
+    </button>
 
-  </aside>
+</aside>
 
 
-  <!-- =====================
-       メイン
-  ====================== -->
+<!-- ======================================================
+     メイン
+====================================================== -->
 
-  <main class="main">
+<main class="main">
+
+
+    <!-- ヘッダー -->
 
     <header class="header">
 
-      <div class="date">
-        2026年10月6日（火）
-      </div>
+        <div>
+            <div class="date" id="todayDate">
+                2026年10月6日（火）
+            </div>
 
-      <div class="header-right">
+            <div class="header-title">
+                おかえりなさい
+            </div>
+        </div>
+
 
         <div class="weather">
-          ☁️ 22℃　くもり
-        </div>
 
-        <div class="user-avatar">
-          👨
-        </div>
+            <div class="weather-icon">
+                ☀️
+            </div>
 
-      </div>
+            <div>
+                <div class="weather-temp">
+                    22℃
+                </div>
+
+                <div style="font-size:10px;color:#999;">
+                    土浦周辺
+                </div>
+            </div>
+
+        </div>
 
     </header>
 
 
-    <div class="content">
+    <!-- ==================================================
+         ヒーロー
+    ================================================== -->
 
-      <!-- ヒーロー -->
+    <section class="hero">
 
-      <section class="hero">
+        <div class="hero-content">
+
+            <h1>
+                今日も、わが家の一日を。
+            </h1>
+
+            <p>
+                家族の予定、子どもたちの成長、
+                家のことをひとつの場所に。
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         クイックアクセス
+    ================================================== -->
+
+    <section class="quick-grid">
+
+        <button class="quick-card"
+                onclick="openRecord()">
+
+            <div class="quick-icon">
+                ✏️
+            </div>
+
+            <div class="quick-title">
+                今日の記録
+            </div>
+
+            <div class="quick-desc">
+                今日あったことを残す
+            </div>
+
+        </button>
+
+
+        <button class="quick-card">
+
+            <div class="quick-icon">
+                📷
+            </div>
+
+            <div class="quick-title">
+                写真を残す
+            </div>
+
+            <div class="quick-desc">
+                家族の思い出
+            </div>
+
+        </button>
+
+
+        <button class="quick-card">
+
+            <div class="quick-icon">
+                🏠
+            </div>
+
+            <div class="quick-title">
+                家の記録
+            </div>
+
+            <div class="quick-desc">
+                メンテナンス・設備
+            </div>
+
+        </button>
+
+
+        <button class="quick-card">
+
+            <div class="quick-icon">
+                👧
+            </div>
+
+            <div class="quick-title">
+                成長記録
+            </div>
+
+            <div class="quick-desc">
+                子どもたちの記録
+            </div>
+
+        </button>
+
+    </section>
+
+
+    <!-- ==================================================
+         ダッシュボード
+    ================================================== -->
+
+    <section class="dashboard">
+
+
+        <!-- 左 -->
 
         <div>
-          <h1>家族の時間を、もっと楽しく。</h1>
-          <p>わが家のことを、ここに残していこう。</p>
-        </div>
-
-        <div class="today-plan">
-
-          <h3>今日の予定</h3>
-
-          <div class="plan-row">
-            <span class="plan-time">08:00</span>
-            <span>長女：保育園</span>
-          </div>
-
-          <div class="plan-row">
-            <span class="plan-time">15:00</span>
-            <span>パパ：在宅勤務</span>
-          </div>
-
-          <div class="plan-row">
-            <span class="plan-time">17:00</span>
-            <span>燃えるゴミ</span>
-          </div>
-
-          <div class="plan-row">
-            <span class="plan-time">21:00</span>
-            <span>子どもたち就寝</span>
-          </div>
-
-        </div>
-
-      </section>
 
 
-      <!-- クイックカード -->
+            <!-- 今日の予定 -->
 
-      <section class="quick-grid">
+            <div class="card">
 
-        <div class="quick-card">
-          <div class="quick-icon">📅</div>
-          <strong>カレンダー</strong>
-          <span>予定を確認する</span>
-        </div>
+                <div class="card-title">
 
-        <div class="quick-card">
-          <div class="quick-icon">👧</div>
-          <strong>子どもたち</strong>
-          <span>成長記録を見る</span>
-        </div>
+                    今日の予定
 
-        <div class="quick-card">
-          <div class="quick-icon">🏠</div>
-          <strong>家の管理</strong>
-          <span>設備・メンテ等</span>
-        </div>
+                    <button class="card-link">
+                        すべて見る
+                    </button>
 
-        <div class="quick-card">
-          <div class="quick-icon">💴</div>
-          <strong>家計簿</strong>
-          <span>支出・固定費</span>
-        </div>
-
-        <div class="quick-card">
-          <div class="quick-icon">📷</div>
-          <strong>写真・思い出</strong>
-          <span>アルバムを見る</span>
-        </div>
-
-      </section>
+                </div>
 
 
-      <!-- ダッシュボード -->
+                <div class="schedule-item">
 
-      <section class="dashboard-grid">
+                    <div class="schedule-time">
+                        08:30
+                    </div>
 
-        <!-- TODO -->
+                    <div>
 
-        <div class="card">
+                        <div class="schedule-title">
+                            保育園
+                        </div>
 
-          <div class="card-title">
-            <h2>今日のやること</h2>
-            <span class="more">すべて見る ›</span>
-          </div>
+                        <div class="schedule-note">
+                            いつもの登園
+                        </div>
 
-          <label class="todo-item done">
-            <input type="checkbox" checked>
-            <span>長女を保育園に送る</span>
-          </label>
+                    </div>
 
-          <label class="todo-item">
-            <input type="checkbox">
-            <span>洗濯（タオル）</span>
-          </label>
-
-          <label class="todo-item">
-            <input type="checkbox">
-            <span>芝生の水やり</span>
-          </label>
-
-          <label class="todo-item">
-            <input type="checkbox">
-            <span>夕食の買い物</span>
-          </label>
-
-          <button class="add-todo" onclick="addTodo()">
-            ＋ タスクを追加
-          </button>
-
-        </div>
+                </div>
 
 
-        <!-- 子ども -->
+                <div class="schedule-item">
 
-        <div class="card">
+                    <div class="schedule-time">
+                        18:00
+                    </div>
 
-          <div class="card-title">
-            <h2>子どもたちのようす</h2>
-            <span class="more">詳細 ›</span>
-          </div>
+                    <div>
 
-          <div class="child">
+                        <div class="schedule-title">
+                            お迎え
+                        </div>
 
-            <div class="child-avatar">👧</div>
+                        <div class="schedule-note">
+                            パパ担当
+                        </div>
 
-            <div class="child-info">
-              <strong>長女</strong>
-              <small>身長：記録を追加</small>
-              <small>最近：元気いっぱい</small>
+                    </div>
+
+                </div>
+
+
+                <div class="schedule-item">
+
+                    <div class="schedule-time">
+                        21:00
+                    </div>
+
+                    <div>
+
+                        <div class="schedule-title">
+                            子どもたち就寝
+                        </div>
+
+                        <div class="schedule-note">
+                            明日の準備も忘れずに
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
 
-          </div>
 
-          <div class="child">
+            <!-- 子ども -->
 
-            <div class="child-avatar">👶</div>
+            <div class="card" style="margin-top:20px;">
 
-            <div class="child-info">
-              <strong>次女</strong>
-              <small>2歳になりました 🎂</small>
-              <small>最近：お姉ちゃんをよく真似する</small>
+                <div class="card-title">
+                    子どもたちのようす
+
+                    <button class="card-link">
+                        記録を見る
+                    </button>
+                </div>
+
+
+                <div class="children">
+
+
+                    <div class="child">
+
+                        <div class="child-name">
+                            お姉ちゃん
+                        </div>
+
+                        <div class="child-age">
+                            4歳
+                        </div>
+
+                        <div class="child-note">
+                            🏃 今日も元気いっぱい。<br>
+                            最近は体操が楽しいみたい。
+                        </div>
+
+                    </div>
+
+
+                    <div class="child">
+
+                        <div class="child-name">
+                            妹ちゃん
+                        </div>
+
+                        <div class="child-age">
+                            2歳
+                        </div>
+
+                        <div class="child-note">
+                            🎂 今日はお誕生日。<br>
+                            2歳の一年も楽しみ。
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
 
-          </div>
+
+            <!-- 最近の記録 -->
+
+            <div class="card" style="margin-top:20px;">
+
+                <div class="card-title">
+                    最近の記録
+                </div>
+
+
+                <div class="record">
+
+                    <div class="record-date">
+                        2026/10/05
+                    </div>
+
+                    <div class="record-title">
+                        軽井沢旅行から帰宅
+                    </div>
+
+                    <div class="record-body">
+                        サファリパーク → 軽井沢 → おもちゃ王国。
+                        ちょっと移動は長かったけど楽しかった。
+                    </div>
+
+                </div>
+
+
+                <div class="record">
+
+                    <div class="record-date">
+                        2026/10/04
+                    </div>
+
+                    <div class="record-title">
+                        妹ちゃんの誕生日
+                    </div>
+
+                    <div class="record-body">
+                        2歳になりました。
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
 
-        <!-- 今後の予定 -->
+        <!-- 右 -->
 
-        <div class="card">
-
-          <div class="card-title">
-            <h2>今後の予定</h2>
-            <span class="more">すべて見る ›</span>
-          </div>
-
-          <div class="schedule-item">
-            <div class="schedule-dot"></div>
-            <div class="schedule-date">10/10</div>
-            <div class="schedule-name">家族のおでかけ</div>
-          </div>
-
-          <div class="schedule-item">
-            <div class="schedule-dot"></div>
-            <div class="schedule-date">10/14</div>
-            <div class="schedule-name">歯科検診</div>
-          </div>
-
-          <div class="schedule-item">
-            <div class="schedule-dot"></div>
-            <div class="schedule-date">10/18</div>
-            <div class="schedule-name">家族旅行</div>
-          </div>
-
-          <div class="schedule-item">
-            <div class="schedule-dot"></div>
-            <div class="schedule-date">10/25</div>
-            <div class="schedule-name">車の点検</div>
-          </div>
-
-        </div>
-
-      </section>
+        <div>
 
 
-      <!-- 最近の記録 -->
+            <!-- Todo -->
 
-      <section class="card records">
+            <div class="card">
 
-        <div class="card-title">
-          <h2>最近の記録</h2>
-          <span class="more">一覧を見る ›</span>
-        </div>
-
-        <div class="record">
-
-          <div class="record-tag">
-            子ども
-          </div>
-
-          <div class="record-date">
-            2026/10/05
-          </div>
-
-          <div class="record-content">
-            <strong>次女 2歳の誕生日 🎂</strong>
-            <span>家族みんなでお祝い。たくさん遊びました。</span>
-          </div>
-
-          <div class="record-arrow">›</div>
-
-        </div>
+                <div class="card-title">
+                    今日やること
+                </div>
 
 
-        <div class="record">
+                <div class="todo">
+                    <input type="checkbox">
+                    <span>保育園の準備</span>
+                </div>
 
-          <div class="record-tag">
-            旅行
-          </div>
+                <div class="todo">
+                    <input type="checkbox">
+                    <span>洗濯物をしまう</span>
+                </div>
 
-          <div class="record-date">
-            2026/10/03
-          </div>
-
-          <div class="record-content">
-            <strong>軽井沢旅行</strong>
-            <span>群馬サファリパークから軽井沢へ。</span>
-          </div>
-
-          <div class="record-arrow">›</div>
-
-        </div>
+                <div class="todo">
+                    <input type="checkbox">
+                    <span>明日の予定確認</span>
+                </div>
 
 
-        <div class="record">
+                <button class="add-button"
+                        onclick="addTodo()">
 
-          <div class="record-tag">
-            家
-          </div>
+                    ＋ Todoを追加
 
-          <div class="record-date">
-            2026/10/02
-          </div>
+                </button>
 
-          <div class="record-content">
-            <strong>エコキュート</strong>
-            <span>設備情報を登録しました。</span>
-          </div>
-
-          <div class="record-arrow">›</div>
-
-        </div>
+            </div>
 
 
-        <div class="record">
+            <!-- 家のメンテナンス -->
 
-          <div class="record-tag">
-            庭・芝生
-          </div>
+            <div class="card" style="margin-top:20px;">
 
-          <div class="record-date">
-            2026/09/30
-          </div>
-
-          <div class="record-content">
-            <strong>芝生の様子</strong>
-            <span>秋の管理記録。</span>
-          </div>
-
-          <div class="record-arrow">›</div>
-
-        </div>
+                <div class="card-title">
+                    家のメンテナンス
+                </div>
 
 
-        <div class="record">
+                <div class="maintenance">
 
-          <div class="record-tag">
-            ペット
-          </div>
+                    <div>
+                        <div class="maintenance-name">
+                            芝生
+                        </div>
 
-          <div class="record-date">
-            2026/09/28
-          </div>
+                        <div class="maintenance-date">
+                            最終：2026/09/28
+                        </div>
+                    </div>
 
-          <div class="record-content">
-            <strong>猫の記録</strong>
-            <span>体調・食事などを記録しました。</span>
-          </div>
+                    <span class="badge">
+                        今月
+                    </span>
 
-          <div class="record-arrow">›</div>
-
-        </div>
-
-      </section>
+                </div>
 
 
-      <!-- 右側情報 -->
+                <div class="maintenance">
 
-      <section class="dashboard-grid">
+                    <div>
+                        <div class="maintenance-name">
+                            エコキュート
+                        </div>
 
-        <div class="card side-card">
+                        <div class="maintenance-date">
+                            点検：2027/01予定
+                        </div>
+                    </div>
 
-          <div class="card-title">
-            <h2>家のメンテナンス</h2>
-            <span class="more">一覧 ›</span>
-          </div>
+                    <span class="badge">
+                        OK
+                    </span>
 
-          <div class="maintenance-item">
-            <span>エコキュート</span>
-            <span class="maintenance-date">2027/10</span>
-          </div>
+                </div>
 
-          <div class="maintenance-item">
-            <span>エアコン</span>
-            <span class="maintenance-date">2026/12</span>
-          </div>
 
-          <div class="maintenance-item">
-            <span>食洗機</span>
-            <span class="maintenance-date">2027/03</span>
-          </div>
+                <div class="maintenance">
 
-          <div class="maintenance-item">
-            <span>芝生</span>
-            <span class="maintenance-date">2026/11</span>
-          </div>
+                    <div>
+                        <div class="maintenance-name">
+                            太陽光・蓄電池
+                        </div>
+
+                        <div class="maintenance-date">
+                            稼働中
+                        </div>
+                    </div>
+
+                    <span class="badge">
+                        OK
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- 今後 -->
+
+            <div class="card" style="margin-top:20px;">
+
+                <div class="card-title">
+                    今後の予定
+                </div>
+
+
+                <div class="record">
+
+                    <div class="record-date">
+                        2026/10/10
+                    </div>
+
+                    <div class="record-title">
+                        家族でおでかけ
+                    </div>
+
+                </div>
+
+
+                <div class="record">
+
+                    <div class="record-date">
+                        2026/10/24
+                    </div>
+
+                    <div class="record-title">
+                        保育園イベント
+                    </div>
+
+                </div>
+
+
+                <div class="record">
+
+                    <div class="record-date">
+                        2026/11/01
+                    </div>
+
+                    <div class="record-title">
+                        家のメンテナンス確認
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
+    </section>
 
-        <div class="card side-card">
-
-          <div class="card-title">
-            <h2>クイック追加</h2>
-          </div>
-
-          <div class="quick-actions">
-
-            <button class="action record" onclick="newRecord()">
-              ＋ 新しい記録を追加
-            </button>
-
-            <button class="action photo" onclick="uploadPhoto()">
-              📷 写真をアップロード
-            </button>
-
-            <button class="action memo" onclick="newMemo()">
-              ✎ メモを作成
-            </button>
-
-          </div>
-
-        </div>
+</main>
 
 
-        <div class="card side-card">
+<!-- ======================================================
+     スマホ下部ナビ
+====================================================== -->
 
-          <div class="card-title">
-            <h2>今月の支出</h2>
-            <span class="more">詳細 ›</span>
-          </div>
+<nav class="mobile-nav">
 
-          <div class="expense">
-            ¥182,450
-          </div>
 
-          <div class="expense-change">
-            先月比　+12,400円
-          </div>
+    <button class="mobile-nav-item active">
+        <span>🏠</span>
+        ホーム
+    </button>
 
-        </div>
 
-      </section>
+    <button class="mobile-nav-item">
+        <span>📅</span>
+        予定
+    </button>
 
-    </div>
 
-  </main>
+    <button class="mobile-nav-item">
+        <span>📷</span>
+        記録
+    </button>
 
-</div>
+
+    <button class="mobile-nav-item">
+        <span>👨‍👩‍👧‍👧</span>
+        家族
+    </button>
+
+
+    <button class="mobile-nav-item">
+        <span>☰</span>
+        その他
+    </button>
+
+</nav>
+
+
+<!-- ======================================================
+     ＋ボタン
+====================================================== -->
+
+<button class="floating-button"
+        onclick="openRecord()">
+
+    ＋
+
+</button>
 
 
 <script>
 
-  /*
-   * ==========================================
-   * 今は仮データ。
-   *
-   * 将来的にはここをSupabaseから取得する。
-   * ==========================================
-   */
+/* =========================================================
+   日付
+========================================================= */
 
-  const familyData = {
+const dateElement =
+    document.getElementById("todayDate");
 
-    family: [
-      {
-        name: "あきら",
-        role: "パパ"
-      },
-      {
-        name: "ママ",
-        role: "ママ"
-      },
-      {
-        name: "長女",
-        role: "子ども"
-      },
-      {
-        name: "次女",
-        role: "子ども"
-      }
-    ],
+const today = new Date();
 
-    todos: [
-      "洗濯（タオル）",
-      "芝生の水やり",
-      "夕食の買い物"
-    ],
+const week = [
+    "日",
+    "月",
+    "火",
+    "水",
+    "木",
+    "金",
+    "土"
+];
 
-    records: [
-      {
-        category: "子ども",
-        title: "次女 2歳の誕生日",
-        date: "2026/10/05"
-      },
-      {
-        category: "旅行",
-        title: "軽井沢旅行",
-        date: "2026/10/03"
-      }
-    ]
-
-  };
+dateElement.textContent =
+    `${today.getFullYear()}年` +
+    `${today.getMonth() + 1}月` +
+    `${today.getDate()}日` +
+    `（${week[today.getDay()]}）`;
 
 
-  /*
-   * Todo追加
-   */
+/* =========================================================
+   Todo
+========================================================= */
 
-  function addTodo() {
+document
+    .querySelectorAll(".todo input")
+    .forEach(input => {
 
-    const task = prompt("追加するタスクを入力してください");
+        input.addEventListener("change", () => {
 
-    if (!task) {
-      return;
-    }
+            input.parentElement.classList.toggle(
+                "done",
+                input.checked
+            );
 
-    alert("「" + task + "」を追加しました。\n\n※現在は画面上の仮動作です。");
-
-  }
-
-
-  /*
-   * 新しい記録
-   */
-
-  function newRecord() {
-
-    const title = prompt("記録のタイトルを入力してください");
-
-    if (!title) {
-      return;
-    }
-
-    alert("「" + title + "」を保存しました。\n\n※Supabase接続後は本当に保存されます。");
-
-  }
-
-
-  /*
-   * 写真
-   */
-
-  function uploadPhoto() {
-
-    alert(
-      "写真アップロード画面をここに実装できます。\n\n" +
-      "Supabase Storageと接続すれば、写真を保存できます。"
-    );
-
-  }
-
-
-  /*
-   * メモ
-   */
-
-  function newMemo() {
-
-    const memo = prompt("メモを入力してください");
-
-    if (!memo) {
-      return;
-    }
-
-    alert("メモを保存しました。\n\n※現在は仮動作です。");
-
-  }
-
-
-  /*
-   * ナビゲーション
-   */
-
-  document.querySelectorAll(".nav-item").forEach(item => {
-
-    item.addEventListener("click", () => {
-
-      document
-        .querySelectorAll(".nav-item")
-        .forEach(nav => nav.classList.remove("active"));
-
-      item.classList.add("active");
+        });
 
     });
 
-  });
+
+function addTodo() {
+
+    const text =
+        prompt("追加するTodoを入力してください");
+
+    if (!text) return;
+
+    alert(
+        `「${text}」を追加しました。\n\n` +
+        `※現在はサンプル動作です。`
+    );
+
+}
+
+
+/* =========================================================
+   記録追加
+========================================================= */
+
+function openRecord() {
+
+    const text =
+        prompt("今日の記録を入力してください");
+
+    if (!text) return;
+
+    alert(
+        "記録しました。\n\n" +
+        text +
+        "\n\n" +
+        "※現在はサンプル動作です。\n" +
+        "次の段階でSupabaseへ保存できます。"
+    );
+
+}
+
+
+/* =========================================================
+   モバイルナビ
+========================================================= */
+
+document
+    .querySelectorAll(".mobile-nav-item")
+    .forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            document
+                .querySelectorAll(".mobile-nav-item")
+                .forEach(item => {
+                    item.classList.remove("active");
+                });
+
+            button.classList.add("active");
+
+        });
+
+    });
 
 </script>
 
