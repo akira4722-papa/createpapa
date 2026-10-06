@@ -1,1475 +1,1443 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>わが家の記録帳</title>
-
-    <style>
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            overflow-x: hidden;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>わが家の記録帳</title>
 
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            min-height: 100vh;
-            overflow-x: hidden;
+<style>
+* {
+    box-sizing: border-box;
+}
 
-            font-family:
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                "Hiragino Kaku Gothic ProN",
-                "Hiragino Sans",
-                "Yu Gothic",
-                Meiryo,
-                sans-serif;
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+}
 
-            background: #f5f7f9;
-            color: #27313a;
-        }
+body {
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Hiragino Kaku Gothic ProN",
+        "Hiragino Sans",
+        "Yu Gothic",
+        Meiryo,
+        sans-serif;
 
-        button {
-            font-family: inherit;
-        }
+    background: #f5f7f8;
+    color: #283238;
+    overflow-x: hidden;
+}
 
-        .page {
-            display: none;
-        }
+button {
+    font: inherit;
+}
 
-        .page.active {
-            display: block;
-        }
+.page {
+    display: none;
+}
 
+.page.active {
+    display: block;
+}
 
-        /* ========================================
-           レイアウト
-        ======================================== */
 
-        .app {
-            display: flex;
-            min-height: 100vh;
-            width: 100%;
-        }
+/* =========================================
+   PCサイドバー
+========================================= */
 
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
 
-            width: 240px;
+    width: 240px;
 
-            background: #ffffff;
-            border-right: 1px solid #e7ebef;
+    background: #ffffff;
+    border-right: 1px solid #e8ecee;
 
-            padding: 28px 16px;
+    padding: 28px 16px;
 
-            z-index: 100;
-        }
+    z-index: 100;
+}
 
-        .main {
-            width: calc(100% - 240px);
-            margin-left: 240px;
-            min-width: 0;
-        }
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 
+    padding: 0 10px 28px;
 
-        /* ========================================
-           サイドバー
-        ======================================== */
+    font-size: 18px;
+    font-weight: 700;
+}
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+.logo-icon {
+    width: 36px;
+    height: 36px;
 
-            padding: 0 10px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-            font-size: 19px;
-            font-weight: 700;
-            color: #27313a;
-        }
+    border-radius: 11px;
 
-        .logo-icon {
-            width: 36px;
-            height: 36px;
+    background: #dfeee9;
+    color: #4d7b70;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+    font-size: 18px;
+}
 
-            border-radius: 11px;
+.nav-title {
+    padding: 0 12px 9px;
 
-            background: #dfeee9;
-            color: #47776b;
+    color: #a0a8ad;
 
-            font-size: 19px;
-        }
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+}
 
-        .nav-section {
-            margin-top: 12px;
-        }
+.nav-section {
+    margin-bottom: 24px;
+}
 
-        .nav-title {
-            padding: 0 12px 8px;
+.nav-item {
+    width: 100%;
 
-            color: #9ba5ad;
+    display: flex;
+    align-items: center;
 
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-        }
+    gap: 12px;
 
-        .nav-item {
-            width: 100%;
+    padding: 11px 12px;
 
-            display: flex;
-            align-items: center;
-            gap: 12px;
+    margin-bottom: 3px;
 
-            border: 0;
-            border-radius: 10px;
+    border: 0;
+    border-radius: 10px;
 
-            padding: 11px 12px;
-            margin-bottom: 4px;
+    background: transparent;
 
-            background: transparent;
-            color: #65717a;
+    color: #68747b;
 
-            font-size: 14px;
-            text-align: left;
+    font-size: 13px;
 
-            cursor: pointer;
+    text-align: left;
 
-            transition:
-                background 0.2s ease,
-                color 0.2s ease;
-        }
+    cursor: pointer;
+}
 
-        .nav-item:hover {
-            background: #f3f6f7;
-            color: #3f655c;
-        }
+.nav-item:hover {
+    background: #f5f8f7;
+}
 
-        .nav-item.active {
-            background: #e6f1ed;
-            color: #35695d;
-            font-weight: 700;
-        }
+.nav-item.active {
+    background: #e6f1ed;
+    color: #3f7064;
+    font-weight: 700;
+}
 
-        .nav-icon {
-            width: 20px;
-            text-align: center;
-            font-size: 17px;
-        }
+.nav-icon {
+    width: 20px;
 
+    text-align: center;
 
-        /* ========================================
-           ヘッダー
-        ======================================== */
+    font-size: 16px;
+}
 
-        .topbar {
-            height: 76px;
 
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+/* =========================================
+   メイン
+========================================= */
 
-            padding: 0 34px;
+.main {
+    width: calc(100% - 240px);
+    margin-left: 240px;
 
-            background: rgba(255, 255, 255, 0.95);
-            border-bottom: 1px solid #e7ebef;
+    min-height: 100vh;
+}
 
-            position: sticky;
-            top: 0;
 
-            z-index: 50;
-        }
+/* =========================================
+   ヘッダー
+========================================= */
 
-        .topbar-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #29343c;
-        }
+.topbar {
+    height: 76px;
 
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-        .date-text {
-            font-size: 13px;
-            color: #7a858d;
-        }
+    padding: 0 34px;
 
-        .profile {
-            width: 38px;
-            height: 38px;
+    background: rgba(255,255,255,.96);
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+    border-bottom: 1px solid #e8ecee;
 
-            border-radius: 50%;
+    position: sticky;
+    top: 0;
 
-            background: #dfeee9;
-            color: #47776b;
+    z-index: 50;
+}
 
-            font-size: 16px;
-            font-weight: 700;
-        }
+.topbar-title {
+    font-size: 21px;
+    font-weight: 700;
+}
 
+.topbar-right {
+    display: flex;
+    align-items: center;
 
-        /* ========================================
-           コンテンツ
-        ======================================== */
+    gap: 14px;
+}
 
-        .content {
-            width: 100%;
-            max-width: 1440px;
+.date-text {
+    font-size: 12px;
+    color: #899399;
+}
 
-            margin: 0 auto;
-            padding: 30px 34px 60px;
-        }
+.profile {
+    width: 38px;
+    height: 38px;
 
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-        /* ========================================
-           ホーム ヒーロー
-        ======================================== */
+    border-radius: 50%;
 
-        .hero {
-            position: relative;
+    background: #dfeee9;
+    color: #4d7b70;
 
-            min-height: 220px;
+    font-size: 14px;
+    font-weight: 700;
+}
 
-            display: flex;
-            align-items: flex-end;
 
-            padding: 32px;
+/* =========================================
+   コンテンツ
+========================================= */
 
-            border-radius: 22px;
+.content {
+    width: 100%;
+    max-width: 1440px;
 
-            overflow: hidden;
+    margin: 0 auto;
 
-            background:
-                linear-gradient(
-                    120deg,
-                    rgba(64, 92, 82, 0.82),
-                    rgba(110, 137, 127, 0.46)
-                ),
-                linear-gradient(
-                    135deg,
-                    #b9d1c8,
-                    #dce7e2
-                );
+    padding: 30px 34px 60px;
+}
 
-            color: #ffffff;
 
-            margin-bottom: 24px;
-        }
+/* =========================================
+   ホーム ヒーロー
+========================================= */
 
-        .hero::after {
-            content: "";
+.hero {
+    position: relative;
 
-            position: absolute;
-            right: -50px;
-            bottom: -100px;
+    min-height: 220px;
 
-            width: 300px;
-            height: 300px;
+    display: flex;
+    align-items: flex-end;
 
-            border-radius: 50%;
+    padding: 32px;
 
-            background: rgba(255,255,255,0.12);
-        }
+    border-radius: 22px;
 
-        .hero-content {
-            position: relative;
-            z-index: 2;
-        }
+    overflow: hidden;
 
-        .hero-small {
-            font-size: 13px;
-            opacity: 0.9;
-            margin-bottom: 7px;
-        }
+    background:
+        linear-gradient(
+            120deg,
+            rgba(65,91,82,.84),
+            rgba(113,138,128,.48)
+        ),
+        linear-gradient(
+            135deg,
+            #b9d1c8,
+            #dce7e2
+        );
 
-        .hero-title {
-            margin: 0;
+    color: #ffffff;
 
-            font-size: clamp(25px, 4vw, 38px);
-            line-height: 1.35;
-            font-weight: 700;
-        }
+    margin-bottom: 24px;
+}
 
-        .hero-sub {
-            margin-top: 10px;
+.hero::after {
+    content: "";
 
-            font-size: 13px;
-            opacity: 0.9;
-        }
+    position: absolute;
 
+    width: 300px;
+    height: 300px;
 
-        /* ========================================
-           クイックカード
-        ======================================== */
+    right: -60px;
+    bottom: -110px;
 
-        .quick-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
+    border-radius: 50%;
 
-        .quick-card {
-            border: 1px solid #e6ebee;
-            background: #ffffff;
-            border-radius: 15px;
-            padding: 19px;
+    background: rgba(255,255,255,.12);
+}
 
-            cursor: pointer;
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
 
-            transition:
-                transform 0.2s ease,
-                box-shadow 0.2s ease;
-        }
+.hero-small {
+    font-size: 12px;
+    opacity: .9;
 
-        .quick-card:hover {
-            transform: translateY(-2px);
+    margin-bottom: 7px;
+}
 
-            box-shadow:
-                0 8px 22px rgba(37, 53, 61, 0.07);
-        }
+.hero-title {
+    margin: 0;
 
-        .quick-card-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+    font-size: 36px;
+    line-height: 1.35;
 
-        .quick-icon {
-            width: 40px;
-            height: 40px;
+    font-weight: 700;
+}
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+.hero-sub {
+    margin-top: 10px;
 
-            border-radius: 11px;
+    font-size: 12px;
 
-            background: #edf4f1;
+    opacity: .9;
+}
 
-            font-size: 19px;
-        }
 
-        .quick-label {
-            margin-top: 13px;
-            font-size: 13px;
-            color: #7b858c;
-        }
+/* =========================================
+   クイックカード
+========================================= */
 
-        .quick-value {
-            margin-top: 4px;
+.quick-grid {
+    display: grid;
 
-            font-size: 18px;
-            font-weight: 700;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
 
-            color: #344049;
-        }
+    gap: 16px;
 
+    margin-bottom: 24px;
+}
 
-        /* ========================================
-           ダッシュボード
-        ======================================== */
+.quick-card {
+    padding: 18px;
 
-        .dashboard-grid {
-            display: grid;
+    border: 1px solid #e7ebed;
+    border-radius: 15px;
 
-            grid-template-columns:
-                minmax(0, 1.15fr)
-                minmax(0, 0.85fr);
+    background: #ffffff;
 
-            gap: 20px;
-        }
+    cursor: pointer;
 
-        .card {
-            background: #ffffff;
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+}
 
-            border: 1px solid #e7ebee;
+.quick-card:hover {
+    transform: translateY(-2px);
 
-            border-radius: 17px;
+    box-shadow:
+        0 8px 22px rgba(40,55,62,.07);
+}
 
-            padding: 21px;
+.quick-card-top {
+    display: flex;
+    justify-content: space-between;
+}
 
-            min-width: 0;
-        }
+.quick-icon {
+    width: 40px;
+    height: 40px;
 
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-            margin-bottom: 17px;
-        }
+    border-radius: 11px;
 
-        .card-title {
-            margin: 0;
+    background: #edf4f1;
 
-            font-size: 16px;
-            font-weight: 700;
+    font-size: 18px;
+}
 
-            color: #35414a;
-        }
+.quick-label {
+    margin-top: 13px;
 
-        .card-link {
-            border: 0;
-            background: transparent;
+    font-size: 12px;
+    color: #7f898f;
+}
 
-            color: #6a9387;
+.quick-value {
+    margin-top: 4px;
 
-            font-size: 12px;
+    font-size: 17px;
+    font-weight: 700;
+}
 
-            cursor: pointer;
-        }
 
+/* =========================================
+   ダッシュボードカード
+========================================= */
 
-        /* ========================================
-           予定
-        ======================================== */
+.dashboard-grid {
+    display: grid;
 
-        .schedule-item {
-            display: flex;
-            align-items: center;
+    grid-template-columns:
+        minmax(0, 1.15fr)
+        minmax(0, .85fr);
 
-            gap: 13px;
+    gap: 20px;
+}
 
-            padding: 12px 0;
+.card {
+    min-width: 0;
 
-            border-bottom: 1px solid #edf0f2;
-        }
+    padding: 21px;
 
-        .schedule-item:last-child {
-            border-bottom: 0;
-        }
+    background: #ffffff;
 
-        .schedule-time {
-            width: 48px;
-            flex-shrink: 0;
+    border: 1px solid #e7ebed;
+    border-radius: 17px;
+}
 
-            font-size: 12px;
-            color: #8b969d;
-        }
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-        .schedule-dot {
-            width: 9px;
-            height: 9px;
+    margin-bottom: 17px;
+}
 
-            flex-shrink: 0;
+.card-title {
+    margin: 0;
 
-            border-radius: 50%;
+    font-size: 15px;
+    font-weight: 700;
+}
 
-            background: #79a99c;
-        }
+.card-link {
+    border: 0;
+    background: transparent;
 
-        .schedule-main {
-            min-width: 0;
-            flex: 1;
-        }
+    color: #6b9388;
 
-        .schedule-name {
-            font-size: 13px;
-            font-weight: 600;
+    font-size: 11px;
 
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    cursor: pointer;
+}
 
-        .schedule-person {
-            margin-top: 3px;
 
-            font-size: 11px;
-            color: #929ca3;
-        }
+/* =========================================
+   今日の予定
+========================================= */
 
+.schedule-item {
+    display: flex;
+    align-items: center;
 
-        /* ========================================
-           TODO
-        ======================================== */
+    gap: 13px;
 
-        .todo-item {
-            display: flex;
-            align-items: center;
+    padding: 11px 0;
 
-            gap: 10px;
+    border-bottom: 1px solid #edf0f1;
+}
 
-            padding: 10px 0;
+.schedule-item:last-child {
+    border-bottom: 0;
+}
 
-            border-bottom: 1px solid #edf0f2;
-        }
+.schedule-time {
+    width: 45px;
 
-        .todo-item:last-child {
-            border-bottom: 0;
-        }
+    flex-shrink: 0;
 
-        .todo-check {
-            width: 18px;
-            height: 18px;
+    font-size: 11px;
+    color: #899399;
+}
 
-            border: 1px solid #c9d2d6;
-            border-radius: 5px;
+.schedule-dot {
+    width: 8px;
+    height: 8px;
 
-            flex-shrink: 0;
+    flex-shrink: 0;
 
-            cursor: pointer;
-        }
+    border-radius: 50%;
 
-        .todo-text {
-            font-size: 13px;
-            flex: 1;
-        }
+    background: #78a99d;
+}
 
+.schedule-main {
+    min-width: 0;
+    flex: 1;
+}
 
-        /* ========================================
-           子ども
-        ======================================== */
+.schedule-name {
+    font-size: 12px;
+    font-weight: 600;
 
-        .children-list {
-            display: grid;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-            grid-template-columns:
-                repeat(2, minmax(0, 1fr));
+.schedule-person {
+    margin-top: 3px;
 
-            gap: 12px;
-        }
+    font-size: 10px;
+    color: #949da2;
+}
 
-        .child-card {
-            padding: 15px;
 
-            border-radius: 13px;
+/* =========================================
+   TODO
+========================================= */
 
-            background: #f7f9fa;
-        }
+.todo-item {
+    display: flex;
+    align-items: center;
 
-        .child-avatar {
-            width: 42px;
-            height: 42px;
+    gap: 10px;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+    padding: 9px 0;
 
-            border-radius: 50%;
+    border-bottom: 1px solid #edf0f1;
+}
 
-            background: #e7f0ed;
+.todo-item:last-child {
+    border-bottom: 0;
+}
 
-            margin-bottom: 10px;
+.todo-check {
+    width: 18px;
+    height: 18px;
 
-            font-size: 19px;
-        }
+    border: 1px solid #ccd4d7;
+    border-radius: 5px;
 
-        .child-name {
-            font-size: 14px;
-            font-weight: 700;
-        }
+    flex-shrink: 0;
+}
 
-        .child-info {
-            margin-top: 4px;
+.todo-text {
+    font-size: 12px;
+}
 
-            font-size: 11px;
-            color: #879198;
-        }
 
+/* =========================================
+   子ども
+========================================= */
 
-        /* ========================================
-           メンテナンス
-        ======================================== */
+.children-list {
+    display: grid;
 
-        .maintenance-item {
-            display: flex;
-            align-items: center;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
 
-            gap: 12px;
+    gap: 12px;
+}
 
-            padding: 11px 0;
+.child-card {
+    padding: 15px;
 
-            border-bottom: 1px solid #edf0f2;
-        }
+    border-radius: 13px;
 
-        .maintenance-item:last-child {
-            border-bottom: 0;
-        }
+    background: #f7f9fa;
+}
 
-        .maintenance-icon {
-            width: 35px;
-            height: 35px;
+.child-avatar {
+    width: 42px;
+    height: 42px;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-            border-radius: 9px;
+    border-radius: 50%;
 
-            background: #f1f5f3;
+    background: #e7f0ed;
 
-            flex-shrink: 0;
-        }
+    margin-bottom: 10px;
+}
 
-        .maintenance-main {
-            flex: 1;
-            min-width: 0;
-        }
+.child-name {
+    font-size: 13px;
+    font-weight: 700;
+}
 
-        .maintenance-name {
-            font-size: 13px;
-            font-weight: 600;
-        }
+.child-info {
+    margin-top: 4px;
 
-        .maintenance-date {
-            margin-top: 3px;
+    font-size: 10px;
+    color: #899399;
+}
 
-            font-size: 11px;
-            color: #919ba2;
-        }
 
-        .status {
-            padding: 4px 8px;
+/* =========================================
+   メンテナンス
+========================================= */
 
-            border-radius: 20px;
+.maintenance-item {
+    display: flex;
+    align-items: center;
 
-            background: #e9f2ee;
-            color: #568273;
+    gap: 12px;
 
-            font-size: 10px;
-            font-weight: 600;
-        }
+    padding: 10px 0;
 
+    border-bottom: 1px solid #edf0f1;
+}
 
-        /* ========================================
-           家計
-        ======================================== */
+.maintenance-item:last-child {
+    border-bottom: 0;
+}
 
-        .expense-total {
-            font-size: 28px;
-            font-weight: 700;
+.maintenance-icon {
+    width: 35px;
+    height: 35px;
 
-            color: #35414a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-            margin-bottom: 14px;
-        }
+    border-radius: 9px;
 
-        .expense-bar {
-            width: 100%;
-            height: 8px;
+    background: #f1f5f3;
 
-            border-radius: 10px;
+    flex-shrink: 0;
+}
 
-            background: #edf1f2;
+.maintenance-main {
+    flex: 1;
+    min-width: 0;
+}
 
-            overflow: hidden;
+.maintenance-name {
+    font-size: 12px;
+    font-weight: 600;
+}
 
-            margin-bottom: 15px;
-        }
+.maintenance-date {
+    margin-top: 3px;
 
-        .expense-bar-fill {
-            width: 63%;
-            height: 100%;
+    font-size: 10px;
+    color: #919ba0;
+}
 
-            background: #8aafa3;
-        }
+.status {
+    padding: 4px 8px;
 
-        .expense-row {
-            display: flex;
-            justify-content: space-between;
+    border-radius: 20px;
 
-            padding: 7px 0;
+    background: #e9f2ee;
+    color: #568273;
 
-            font-size: 12px;
-        }
+    font-size: 9px;
+}
 
-        .expense-name {
-            color: #7f8990;
-        }
 
-        .expense-value {
-            font-weight: 600;
-        }
+/* =========================================
+   家計
+========================================= */
 
+.expense-total {
+    font-size: 27px;
+    font-weight: 700;
 
-        /* ========================================
-           カレンダー
-        ======================================== */
+    margin-bottom: 14px;
+}
 
-        .calendar-page-header {
-            width: 100%;
+.expense-bar {
+    width: 100%;
+    height: 8px;
 
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+    margin-bottom: 14px;
 
-            gap: 20px;
+    border-radius: 10px;
 
-            margin-bottom: 20px;
-        }
+    background: #edf1f2;
 
-        .calendar-title-area {
-            min-width: 0;
-            flex: 1;
-        }
+    overflow: hidden;
+}
 
-        .calendar-month-title {
-            margin: 0;
+.expense-bar-fill {
+    width: 63%;
+    height: 100%;
 
-            font-size: 28px;
-            font-weight: 700;
+    background: #8aafa3;
+}
 
-            color: #35414a;
-        }
+.expense-row {
+    display: flex;
+    justify-content: space-between;
 
-        .calendar-subtitle {
-            margin-top: 5px;
+    padding: 6px 0;
 
-            font-size: 12px;
-            color: #8a949b;
-        }
+    font-size: 11px;
+}
 
-        .calendar-controls {
-            display: flex;
-            align-items: center;
-            gap: 7px;
+.expense-name {
+    color: #818b91;
+}
 
-            flex-shrink: 0;
-        }
+.expense-value {
+    font-weight: 600;
+}
 
-        .calendar-button {
-            min-width: 38px;
-            height: 38px;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+/* =========================================
+   カレンダー
+========================================= */
 
-            border: 1px solid #e0e6e9;
-            border-radius: 9px;
+.calendar-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-            background: #ffffff;
-            color: #5d6970;
+    gap: 20px;
 
-            cursor: pointer;
+    margin-bottom: 20px;
+}
 
-            font-size: 15px;
-        }
+.calendar-title-area {
+    min-width: 0;
+}
 
-        .calendar-button:hover {
-            background: #f5f8f7;
-        }
+.calendar-month-title {
+    margin: 0;
 
-        .calendar-today-button {
-            padding: 0 13px;
-            font-size: 12px;
-        }
+    font-size: 27px;
+    font-weight: 700;
+}
 
-        .calendar-card {
-            width: 100%;
+.calendar-subtitle {
+    margin-top: 5px;
 
-            background: #ffffff;
+    font-size: 12px;
+    color: #899399;
+}
 
-            border: 1px solid #e5eaed;
+.calendar-controls {
+    display: flex;
+    align-items: center;
 
-            border-radius: 17px;
+    gap: 7px;
+}
 
-            overflow: hidden;
-        }
+.calendar-button {
+    width: 38px;
+    height: 38px;
 
-        .calendar-scroll {
-            width: 100%;
-            overflow: hidden;
-        }
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-        .calendar-grid {
-            width: 100%;
+    border: 1px solid #e0e6e8;
+    border-radius: 9px;
 
-            display: grid;
+    background: #ffffff;
+    color: #657177;
 
-            grid-template-columns:
-                repeat(7, minmax(0, 1fr));
-        }
+    cursor: pointer;
+}
 
-        .weekday {
-            min-width: 0;
+.calendar-button:hover {
+    background: #f5f8f7;
+}
 
-            padding: 12px 4px;
+.calendar-today-button {
+    width: auto;
 
-            background: #f8fafb;
+    padding: 0 13px;
 
-            border-bottom: 1px solid #e8ecef;
+    font-size: 11px;
+}
 
-            text-align: center;
+.calendar-card {
+    width: 100%;
 
-            font-size: 11px;
-            font-weight: 700;
+    background: #ffffff;
 
-            color: #7d888f;
-        }
+    border: 1px solid #e5eaec;
+    border-radius: 17px;
 
-        .weekday.sunday {
-            color: #c47f7f;
-        }
+    overflow: hidden;
+}
 
-        .weekday.saturday {
-            color: #7390a9;
-        }
+.calendar-scroll {
+    width: 100%;
 
-        .day-cell {
-            min-width: 0;
-            min-height: 120px;
+    overflow: hidden;
+}
 
-            padding: 8px;
+.calendar-grid {
+    width: 100%;
 
-            border-right: 1px solid #edf0f2;
-            border-bottom: 1px solid #edf0f2;
+    display: grid;
 
-            background: #ffffff;
+    grid-template-columns:
+        repeat(7, minmax(0, 1fr));
+}
 
-            overflow: hidden;
+.weekday {
+    padding: 12px 4px;
 
-            cursor: pointer;
-        }
+    border-bottom: 1px solid #e8ecee;
 
-        .day-cell:nth-child(7n) {
-            border-right: 0;
-        }
+    background: #f8fafb;
 
-        .day-cell:hover {
-            background: #fafcfc;
-        }
+    text-align: center;
 
-        .day-cell.other-month {
-            background: #fafbfb;
-        }
+    font-size: 10px;
+    font-weight: 700;
 
-        .day-cell.other-month .day-number {
-            color: #c3cbd0;
-        }
+    color: #7d888e;
+}
 
-        .day-cell.today {
-            background: #f1f8f5;
-        }
+.weekday.sunday {
+    color: #c47f7f;
+}
 
-        .day-number {
-            width: 26px;
-            height: 26px;
+.weekday.saturday {
+    color: #7390a9;
+}
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+.day-cell {
+    min-width: 0;
+    min-height: 120px;
 
-            margin-bottom: 5px;
+    padding: 8px;
 
-            border-radius: 50%;
+    background: #ffffff;
 
-            font-size: 12px;
-            font-weight: 600;
+    border-right: 1px solid #edf0f1;
+    border-bottom: 1px solid #edf0f1;
 
-            color: #5e6a72;
-        }
+    overflow: hidden;
 
-        .day-cell.today .day-number {
-            background: #6f9e91;
-            color: #ffffff;
-        }
+    cursor: pointer;
+}
 
-        .calendar-event {
-            width: 100%;
+.day-cell:nth-child(7n) {
+    border-right: 0;
+}
 
-            margin: 3px 0;
+.day-cell:hover {
+    background: #fafcfc;
+}
 
-            padding: 4px 6px;
+.day-cell.other-month {
+    background: #fafbfb;
+}
 
-            border-radius: 5px;
+.day-cell.other-month .day-number {
+    color: #c3cbd0;
+}
 
-            font-size: 10px;
-            line-height: 1.25;
+.day-cell.today {
+    background: #f1f8f5;
+}
 
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+.day-number {
+    width: 26px;
+    height: 26px;
 
-            color: #3e514b;
-            background: #e5f0ec;
-        }
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-        .calendar-event.child {
-            background: #f3eadf;
-            color: #80684c;
-        }
+    margin-bottom: 5px;
 
-        .calendar-event.family {
-            background: #e4edf4;
-            color: #58728a;
-        }
+    border-radius: 50%;
 
-        .calendar-event.work {
-            background: #ece9f3;
-            color: #6d6680;
-        }
+    font-size: 11px;
+    font-weight: 600;
 
-        .calendar-event.home {
-            background: #e9f0e7;
-            color: #63795e;
-        }
+    color: #5e6a72;
+}
 
-        .calendar-event.travel {
-            background: #f4e7d9;
-            color: #88694c;
-        }
+.day-cell.today .day-number {
+    background: #6f9e91;
+    color: #ffffff;
+}
 
-        .selected-day-panel {
-            margin-top: 20px;
+.calendar-event {
+    width: 100%;
 
-            display: grid;
+    margin: 3px 0;
 
-            grid-template-columns:
-                130px minmax(0, 1fr);
+    padding: 4px 6px;
 
-            gap: 20px;
-        }
+    border-radius: 5px;
 
-        .selected-date {
-            padding: 20px;
+    font-size: 9px;
+    line-height: 1.25;
 
-            border-radius: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
-            background: #eaf3ef;
-        }
+    background: #e5f0ec;
+    color: #3e514b;
+}
 
-        .selected-date-day {
-            font-size: 34px;
-            font-weight: 700;
+.calendar-event.child {
+    background: #f3eadf;
+    color: #80684c;
+}
 
-            color: #456f64;
-        }
+.calendar-event.family {
+    background: #e4edf4;
+    color: #58728a;
+}
 
-        .selected-date-weekday {
-            margin-top: 2px;
+.calendar-event.work {
+    background: #ece9f3;
+    color: #6d6680;
+}
 
-            font-size: 12px;
-            color: #759087;
-        }
+.calendar-event.home {
+    background: #e9f0e7;
+    color: #63795e;
+}
 
-        .selected-events {
-            min-width: 0;
+.calendar-event.travel {
+    background: #f4e7d9;
+    color: #88694c;
+}
 
-            padding: 18px 20px;
 
-            border: 1px solid #e7ebee;
+/* =========================================
+   選択日の予定
+========================================= */
 
-            border-radius: 15px;
+.selected-day-panel {
+    display: grid;
 
-            background: #ffffff;
-        }
+    grid-template-columns:
+        130px minmax(0, 1fr);
 
-        .selected-event {
-            display: flex;
-            align-items: center;
+    gap: 20px;
 
-            gap: 12px;
+    margin-top: 20px;
+}
 
-            padding: 9px 0;
+.selected-date {
+    padding: 20px;
 
-            border-bottom: 1px solid #edf0f2;
-        }
+    border-radius: 15px;
 
-        .selected-event:last-child {
-            border-bottom: 0;
-        }
+    background: #eaf3ef;
+}
 
-        .selected-event-time {
-            width: 44px;
+.selected-date-day {
+    font-size: 34px;
+    font-weight: 700;
 
-            flex-shrink: 0;
+    color: #456f64;
+}
 
-            font-size: 11px;
-            color: #89949a;
-        }
+.selected-date-weekday {
+    margin-top: 2px;
 
-        .selected-event-name {
-            min-width: 0;
+    font-size: 11px;
+    color: #759087;
+}
 
-            font-size: 13px;
-            font-weight: 600;
+.selected-events {
+    min-width: 0;
 
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    padding: 18px 20px;
 
+    border: 1px solid #e7ebed;
+    border-radius: 15px;
 
-        /* ========================================
-           スマホ下部ナビ
-        ======================================== */
+    background: #ffffff;
+}
 
-        .mobile-nav {
-            display: none;
-        }
+.selected-event {
+    display: flex;
+    align-items: center;
 
+    gap: 12px;
 
-        /* ========================================
-           タブレット
-        ======================================== */
+    padding: 9px 0;
 
-        @media (max-width: 1100px) {
+    border-bottom: 1px solid #edf0f1;
+}
 
-            .sidebar {
-                width: 210px;
-            }
+.selected-event:last-child {
+    border-bottom: 0;
+}
 
-            .main {
-                width: calc(100% - 210px);
-                margin-left: 210px;
-            }
+.selected-event-time {
+    width: 44px;
 
-            .content {
-                padding-left: 24px;
-                padding-right: 24px;
-            }
+    flex-shrink: 0;
 
-            .quick-grid {
-                grid-template-columns:
-                    repeat(2, minmax(0, 1fr));
-            }
+    font-size: 10px;
+    color: #89949a;
+}
 
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+.selected-event-name {
+    min-width: 0;
 
+    font-size: 12px;
+    font-weight: 600;
 
-        /* ========================================
-           スマホ
-        ======================================== */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-        @media (max-width: 760px) {
 
-            body {
-                padding-bottom: 68px;
-            }
+/* =========================================
+   スマホ下部ナビ
+========================================= */
 
-            .app {
-                display: block;
-            }
+.mobile-nav {
+    display: none;
+}
 
-            .sidebar {
-                display: none;
-            }
 
-            .main {
-                width: 100%;
-                margin-left: 0;
-            }
+/* =========================================
+   タブレット
+========================================= */
 
+@media (max-width: 1100px) {
 
-            /* ヘッダー */
+    .sidebar {
+        width: 210px;
+    }
 
-            .topbar {
-                height: 62px;
+    .main {
+        width: calc(100% - 210px);
+        margin-left: 210px;
+    }
 
-                padding: 0 16px;
-            }
+    .content {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
 
-            .topbar-title {
-                font-size: 18px;
-            }
+    .quick-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
 
-            .date-text {
-                display: none;
-            }
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
 
-            .profile {
-                width: 34px;
-                height: 34px;
 
-                font-size: 14px;
-            }
+/* =========================================
+   スマホ
+========================================= */
 
+@media (max-width: 760px) {
 
-            /* コンテンツ */
+    body {
+        padding-bottom: 68px;
+    }
 
-            .content {
-                width: 100%;
+    .sidebar {
+        display: none;
+    }
 
-                margin: 0;
+    .main {
+        width: 100%;
+        margin-left: 0;
+    }
 
-                padding:
-                    16px
-                    12px
-                    35px;
-            }
 
+    /* ヘッダー */
 
-            /* ホーム */
+    .topbar {
+        height: 62px;
 
-            .hero {
-                min-height: 190px;
+        padding: 0 16px;
+    }
 
-                padding: 23px;
+    .topbar-title {
+        font-size: 18px;
+    }
 
-                border-radius: 17px;
-            }
+    .date-text {
+        display: none;
+    }
 
-            .hero-title {
-                font-size: 27px;
-            }
+    .profile {
+        width: 34px;
+        height: 34px;
+    }
 
-            .hero-sub {
-                font-size: 11px;
-            }
 
-            .quick-grid {
-                grid-template-columns:
-                    repeat(2, minmax(0, 1fr));
+    /* コンテンツ */
 
-                gap: 9px;
-            }
+    .content {
+        width: 100%;
 
-            .quick-card {
-                padding: 14px;
+        padding:
+            16px
+            12px
+            30px;
+    }
 
-                border-radius: 13px;
-            }
 
-            .quick-icon {
-                width: 35px;
-                height: 35px;
-            }
+    /* ホーム */
 
-            .quick-label {
-                margin-top: 9px;
-                font-size: 11px;
-            }
+    .hero {
+        min-height: 190px;
 
-            .quick-value {
-                font-size: 15px;
-            }
+        padding: 23px;
 
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-                gap: 13px;
-            }
+        border-radius: 17px;
+    }
 
-            .card {
-                padding: 16px;
-                border-radius: 14px;
-            }
+    .hero-title {
+        font-size: 27px;
+    }
 
-            .children-list {
-                grid-template-columns:
-                    repeat(2, minmax(0, 1fr));
-            }
+    .hero-sub {
+        font-size: 11px;
+    }
 
+    .quick-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
 
-            /* ========================================
-               カレンダー上部
-            ======================================== */
+        gap: 9px;
+    }
 
-            .calendar-page-header {
-                width: 100%;
+    .quick-card {
+        padding: 14px;
 
-                display: flex;
-                flex-direction: column;
+        border-radius: 13px;
+    }
 
-                align-items: stretch;
-                justify-content: flex-start;
+    .quick-icon {
+        width: 35px;
+        height: 35px;
+    }
 
-                gap: 12px;
+    .quick-label {
+        margin-top: 9px;
 
-                margin-bottom: 14px;
-            }
+        font-size: 10px;
+    }
 
-            .calendar-title-area {
-                width: 100%;
+    .quick-value {
+        font-size: 14px;
+    }
 
-                text-align: left;
-            }
+    .dashboard-grid {
+        grid-template-columns: 1fr;
 
-            .calendar-month-title {
-                font-size: 22px;
-            }
+        gap: 13px;
+    }
 
-            .calendar-subtitle {
-                margin-top: 4px;
+    .card {
+        padding: 16px;
 
-                font-size: 10px;
-            }
+        border-radius: 14px;
+    }
 
-            .calendar-controls {
-                width: 100%;
 
-                display: grid;
+    /* =====================================
+       カレンダー上部
+       ホームと同じ左右余白・幅を使用
+    ===================================== */
 
-                grid-template-columns:
-                    40px
-                    minmax(0, 1fr)
-                    40px;
+    .calendar-page-header {
+        width: 100%;
 
-                gap: 7px;
-            }
+        display: flex;
 
-            .calendar-button {
-                width: 100%;
-                min-width: 0;
+        flex-direction: column;
 
-                height: 36px;
+        align-items: stretch;
 
-                font-size: 13px;
-            }
+        gap: 11px;
 
-            .calendar-today-button {
-                width: 100%;
+        margin-bottom: 14px;
+    }
 
-                padding: 0;
+    .calendar-title-area {
+        width: 100%;
 
-                font-size: 11px;
-            }
+        min-width: 0;
 
+        text-align: left;
+    }
 
-            /* ========================================
-               カレンダー本体
-            ======================================== */
+    .calendar-month-title {
+        font-size: 22px;
+    }
 
-            .calendar-scroll {
-                width: 100%;
-                overflow: hidden;
-            }
+    .calendar-subtitle {
+        margin-top: 4px;
 
-            .calendar-grid {
-                width: 100%;
-                min-width: 0;
+        font-size: 10px;
+    }
 
-                grid-template-columns:
-                    repeat(7, minmax(0, 1fr));
-            }
+    .calendar-controls {
+        width: 100%;
 
-            .weekday {
-                min-width: 0;
+        display: grid;
 
-                padding:
-                    8px
-                    0;
+        grid-template-columns:
+            40px
+            minmax(0, 1fr)
+            40px;
 
-                font-size: 9px;
-            }
+        gap: 7px;
+    }
 
-            .day-cell {
-                min-width: 0;
+    .calendar-button {
+        width: 100%;
+        min-width: 0;
 
-                min-height: 62px;
+        height: 36px;
 
-                padding:
-                    4px
-                    3px;
+        padding: 0;
 
-                overflow: hidden;
-            }
+        font-size: 13px;
+    }
 
-            .day-number {
-                width: 21px;
-                height: 21px;
+    .calendar-today-button {
+        width: 100%;
 
-                margin-bottom: 2px;
+        padding: 0;
 
-                font-size: 10px;
-            }
+        font-size: 11px;
+    }
 
-            .calendar-event {
-                width: 100%;
 
-                margin: 2px 0;
+    /* =====================================
+       カレンダー本体
+    ===================================== */
 
-                padding:
-                    2px
-                    3px;
+    .calendar-scroll {
+        width: 100%;
 
-                border-radius: 4px;
+        overflow: hidden;
+    }
 
-                font-size: 8px;
-                line-height: 1.25;
+    .calendar-grid {
+        width: 100%;
+        min-width: 0;
 
-                overflow: hidden;
+        grid-template-columns:
+            repeat(7, minmax(0, 1fr));
+    }
 
-                white-space: nowrap;
-                text-overflow: ellipsis;
-            }
+    .weekday {
+        min-width: 0;
 
+        padding: 8px 0;
 
-            /* ========================================
-               選択日の予定
-            ======================================== */
+        font-size: 9px;
+    }
 
-            .selected-day-panel {
-                width: 100%;
+    .day-cell {
+        min-width: 0;
 
-                grid-template-columns: 1fr;
+        min-height: 62px;
 
-                gap: 10px;
+        padding:
+            4px
+            3px;
 
-                margin-top: 13px;
-            }
+        overflow: hidden;
+    }
 
-            .selected-date {
-                padding:
-                    13px
-                    15px;
+    .day-number {
+        width: 21px;
+        height: 21px;
 
-                display: flex;
-                align-items: center;
+        margin-bottom: 2px;
 
-                gap: 8px;
-            }
+        font-size: 10px;
+    }
 
-            .selected-date-day {
-                font-size: 24px;
-            }
+    .calendar-event {
+        width: 100%;
 
-            .selected-date-weekday {
-                margin-top: 0;
-            }
+        margin: 2px 0;
 
-            .selected-events {
-                padding:
-                    13px
-                    15px;
-            }
+        padding:
+            2px
+            3px;
 
+        border-radius: 4px;
 
-            /* ========================================
-               スマホ下部ナビ
-               ホームと同じサイズに統一
-            ======================================== */
+        font-size: 8px;
+        line-height: 1.25;
 
-            .mobile-nav {
-                position: fixed;
+        overflow: hidden;
 
-                left: 0;
-                right: 0;
-                bottom: 0;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
 
-                width: 100%;
-                height: 68px;
 
-                display: grid;
+    /* =====================================
+       選択日の予定
+    ===================================== */
 
-                grid-template-columns:
-                    repeat(4, minmax(0, 1fr));
+    .selected-day-panel {
+        width: 100%;
 
-                background:
-                    rgba(255,255,255,0.98);
+        grid-template-columns: 1fr;
 
-                border-top:
-                    1px solid #e5eaed;
+        gap: 10px;
 
-                z-index: 200;
+        margin-top: 13px;
+    }
 
-                padding:
-                    0
-                    0
-                    env(safe-area-inset-bottom);
+    .selected-date {
+        padding: 13px 15px;
 
-                box-sizing: border-box;
-            }
+        display: flex;
+        align-items: center;
 
-            .mobile-nav-item {
-                width: 100%;
-                height: 68px;
+        gap: 8px;
+    }
 
-                border: 0;
+    .selected-date-day {
+        font-size: 24px;
+    }
 
-                background: transparent;
+    .selected-date-weekday {
+        margin-top: 0;
+    }
 
-                display: flex;
-                flex-direction: column;
+    .selected-events {
+        padding:
+            13px
+            15px;
+    }
 
-                align-items: center;
-                justify-content: center;
 
-                gap: 4px;
+    /* =====================================
+       下部メニュー
+       ホームと同一サイズ
+    ===================================== */
 
-                color: #929ba1;
+    .mobile-nav {
+        position: fixed;
 
-                cursor: pointer;
+        left: 0;
+        right: 0;
+        bottom: 0;
 
-                padding: 0;
-            }
+        width: 100%;
+        height: 68px;
 
-            .mobile-nav-item.active {
-                color: #4e7d71;
-            }
+        display: grid;
 
-            .mobile-nav-icon {
-                width: 22px;
-                height: 22px;
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
 
-                display: flex;
-                align-items: center;
-                justify-content: center;
+        padding: 0;
 
-                font-size: 18px;
-                line-height: 1;
-            }
+        background: rgba(255,255,255,.98);
 
-            .mobile-nav-label {
-                font-size: 10px;
-                line-height: 1.2;
-            }
+        border-top: 1px solid #e5eaed;
 
-        }
+        z-index: 200;
+    }
 
+    .mobile-nav-item {
+        width: 100%;
+        height: 68px;
 
-        /* ========================================
-           小型スマホ
-        ======================================== */
+        display: flex;
+        flex-direction: column;
 
-        @media (max-width: 400px) {
+        align-items: center;
+        justify-content: center;
 
-            .content {
-                padding-left: 9px;
-                padding-right: 9px;
-            }
+        gap: 4px;
 
-            .day-cell {
-                min-height: 58px;
+        padding: 0;
 
-                padding-left: 2px;
-                padding-right: 2px;
-            }
+        border: 0;
 
-            .calendar-event {
-                font-size: 7px;
+        background: transparent;
 
-                padding-left: 2px;
-                padding-right: 2px;
-            }
+        color: #929ba1;
 
-            .weekday {
-                font-size: 8px;
-            }
+        cursor: pointer;
+    }
 
-        }
+    .mobile-nav-item.active {
+        color: #4e7d71;
+    }
 
-    </style>
+    .mobile-nav-icon {
+        width: 22px;
+        height: 22px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 18px;
+        line-height: 1;
+    }
+
+    .mobile-nav-label {
+        font-size: 10px;
+        line-height: 1.2;
+    }
+}
+
+
+/* =========================================
+   小型スマホ
+========================================= */
+
+@media (max-width: 400px) {
+
+    .content {
+        padding-left: 9px;
+        padding-right: 9px;
+    }
+
+    .day-cell {
+        min-height: 58px;
+
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    .calendar-event {
+        padding-left: 2px;
+        padding-right: 2px;
+
+        font-size: 7px;
+    }
+
+    .weekday {
+        font-size: 8px;
+    }
+}
+
+</style>
 </head>
 
 
@@ -1477,15 +1445,23 @@
 
 <div class="app">
 
-    <!-- ========================================
+
+    <!-- =====================================
          PCサイドバー
-    ======================================== -->
+    ====================================== -->
 
     <aside class="sidebar">
 
         <div class="logo">
-            <div class="logo-icon">⌂</div>
-            <span>わが家の記録帳</span>
+
+            <div class="logo-icon">
+                ⌂
+            </div>
+
+            <span>
+                わが家の記録帳
+            </span>
+
         </div>
 
 
@@ -1500,8 +1476,13 @@
                 class="nav-item active"
                 data-page="home">
 
-                <span class="nav-icon">⌂</span>
-                <span>ホーム</span>
+                <span class="nav-icon">
+                    ⌂
+                </span>
+
+                <span>
+                    ホーム
+                </span>
 
             </button>
 
@@ -1510,8 +1491,13 @@
                 class="nav-item"
                 data-page="calendar">
 
-                <span class="nav-icon">□</span>
-                <span>カレンダー</span>
+                <span class="nav-icon">
+                    □
+                </span>
+
+                <span>
+                    カレンダー
+                </span>
 
             </button>
 
@@ -1520,8 +1506,13 @@
                 class="nav-item"
                 data-page="children">
 
-                <span class="nav-icon">♧</span>
-                <span>子どもの記録</span>
+                <span class="nav-icon">
+                    ♧
+                </span>
+
+                <span>
+                    子どもの記録
+                </span>
 
             </button>
 
@@ -1530,8 +1521,13 @@
                 class="nav-item"
                 data-page="house">
 
-                <span class="nav-icon">⌂</span>
-                <span>家の記録</span>
+                <span class="nav-icon">
+                    ⌂
+                </span>
+
+                <span>
+                    家の記録
+                </span>
 
             </button>
 
@@ -1540,8 +1536,13 @@
                 class="nav-item"
                 data-page="expenses">
 
-                <span class="nav-icon">￥</span>
-                <span>家計</span>
+                <span class="nav-icon">
+                    ￥
+                </span>
+
+                <span>
+                    家計
+                </span>
 
             </button>
 
@@ -1550,8 +1551,13 @@
                 class="nav-item"
                 data-page="trips">
 
-                <span class="nav-icon">✈</span>
-                <span>旅行・おでかけ</span>
+                <span class="nav-icon">
+                    ✈
+                </span>
+
+                <span>
+                    旅行・おでかけ
+                </span>
 
             </button>
 
@@ -1560,8 +1566,13 @@
                 class="nav-item"
                 data-page="photos">
 
-                <span class="nav-icon">▣</span>
-                <span>写真・思い出</span>
+                <span class="nav-icon">
+                    ▣
+                </span>
+
+                <span>
+                    写真・思い出
+                </span>
 
             </button>
 
@@ -1579,8 +1590,13 @@
                 class="nav-item"
                 data-page="todo">
 
-                <span class="nav-icon">✓</span>
-                <span>TODO</span>
+                <span class="nav-icon">
+                    ✓
+                </span>
+
+                <span>
+                    TODO
+                </span>
 
             </button>
 
@@ -1589,8 +1605,13 @@
                 class="nav-item"
                 data-page="settings">
 
-                <span class="nav-icon">⚙</span>
-                <span>設定</span>
+                <span class="nav-icon">
+                    ⚙
+                </span>
+
+                <span>
+                    設定
+                </span>
 
             </button>
 
@@ -1599,14 +1620,12 @@
     </aside>
 
 
-    <!-- ========================================
+    <!-- =====================================
          メイン
-    ======================================== -->
+    ====================================== -->
 
     <main class="main">
 
-
-        <!-- ヘッダー -->
 
         <header class="topbar">
 
@@ -1626,7 +1645,6 @@
                     id="headerDate">
                 </div>
 
-
                 <div class="profile">
                     あ
                 </div>
@@ -1636,9 +1654,9 @@
         </header>
 
 
-        <!-- ========================================
-             ホーム
-        ======================================== -->
+        <!-- =====================================
+             HOME
+        ====================================== -->
 
         <div
             id="homePage"
@@ -1655,12 +1673,10 @@
                             2026年10月6日
                         </div>
 
-
                         <h1 class="hero-title">
                             今日も、<br>
                             わが家の一日を。
                         </h1>
-
 
                         <div class="hero-sub">
                             家族の予定や記録を、ひとつの場所に。
@@ -1686,11 +1702,9 @@
 
                         </div>
 
-
                         <div class="quick-label">
                             今日の予定
                         </div>
-
 
                         <div class="quick-value">
                             3件
@@ -1709,11 +1723,9 @@
 
                         </div>
 
-
                         <div class="quick-label">
                             今日の天気
                         </div>
-
 
                         <div class="quick-value">
                             晴れ　23℃
@@ -1732,11 +1744,9 @@
 
                         </div>
 
-
                         <div class="quick-label">
                             子どもの記録
                         </div>
-
 
                         <div class="quick-value">
                             最近の記録 2件
@@ -1755,11 +1765,9 @@
 
                         </div>
 
-
                         <div class="quick-label">
                             TODO
                         </div>
-
 
                         <div class="quick-value">
                             残り 4件
@@ -1773,8 +1781,6 @@
                 <section class="dashboard-grid">
 
 
-                    <!-- 今日の予定 -->
-
                     <div class="card">
 
                         <div class="card-header">
@@ -1782,7 +1788,6 @@
                             <h2 class="card-title">
                                 今日の予定
                             </h2>
-
 
                             <button
                                 class="card-link"
@@ -1866,8 +1871,6 @@
                     </div>
 
 
-                    <!-- TODO -->
-
                     <div class="card">
 
                         <div class="card-header">
@@ -1929,8 +1932,6 @@
                     </div>
 
 
-                    <!-- 子ども -->
-
                     <div class="card">
 
                         <div class="card-header">
@@ -1985,8 +1986,6 @@
 
                     </div>
 
-
-                    <!-- 家 -->
 
                     <div class="card">
 
@@ -2080,8 +2079,6 @@
                     </div>
 
 
-                    <!-- 家計 -->
-
                     <div class="card">
 
                         <div class="card-header">
@@ -2110,60 +2107,27 @@
 
 
                         <div class="expense-row">
-
-                            <span class="expense-name">
-                                食費
-                            </span>
-
-                            <span class="expense-value">
-                                ¥43,200
-                            </span>
-
+                            <span class="expense-name">食費</span>
+                            <span class="expense-value">¥43,200</span>
                         </div>
 
-
                         <div class="expense-row">
-
-                            <span class="expense-name">
-                                日用品
-                            </span>
-
-                            <span class="expense-value">
-                                ¥16,800
-                            </span>
-
+                            <span class="expense-name">日用品</span>
+                            <span class="expense-value">¥16,800</span>
                         </div>
 
-
                         <div class="expense-row">
-
-                            <span class="expense-name">
-                                子ども
-                            </span>
-
-                            <span class="expense-value">
-                                ¥18,500
-                            </span>
-
+                            <span class="expense-name">子ども</span>
+                            <span class="expense-value">¥18,500</span>
                         </div>
 
-
                         <div class="expense-row">
-
-                            <span class="expense-name">
-                                その他
-                            </span>
-
-                            <span class="expense-value">
-                                ¥49,900
-                            </span>
-
+                            <span class="expense-name">その他</span>
+                            <span class="expense-value">¥49,900</span>
                         </div>
 
                     </div>
 
-
-                    <!-- 最近の記録 -->
 
                     <div class="card">
 
@@ -2257,9 +2221,9 @@
         </div>
 
 
-        <!-- ========================================
-             カレンダー
-        ======================================== -->
+        <!-- =====================================
+             CALENDAR
+        ====================================== -->
 
         <div
             id="calendarPage"
@@ -2279,7 +2243,6 @@
                             2026年10月
 
                         </h1>
-
 
                         <div class="calendar-subtitle">
                             家族の予定をまとめて確認
@@ -2342,18 +2305,13 @@
                         <div
                             class="selected-date-day"
                             id="selectedDateDay">
-
                             6
-
                         </div>
-
 
                         <div
                             class="selected-date-weekday"
                             id="selectedDateWeekday">
-
                             火曜日
-
                         </div>
 
                     </div>
@@ -2369,9 +2327,7 @@
 
                         </div>
 
-
-                        <div
-                            id="selectedEventsList">
+                        <div id="selectedEventsList">
                         </div>
 
                     </div>
@@ -2383,178 +2339,102 @@
         </div>
 
 
-        <!-- ========================================
+        <!-- =====================================
              その他ページ
-        ======================================== -->
+        ====================================== -->
 
-        <div
-            id="childrenPage"
-            class="page">
-
+        <div id="childrenPage" class="page">
             <div class="content">
-
                 <div class="card">
-
-                    <h2 class="card-title">
-                        子どもの記録
-                    </h2>
-
-                    <p style="color:#89949a;font-size:13px;">
-                        ここに子どもの成長記録・体調・できたことなどを追加していく予定です。
+                    <h2 class="card-title">子どもの記録</h2>
+                    <p style="color:#89949a;font-size:12px;">
+                        子どもの成長記録・体調・できたことなどを管理します。
                     </p>
-
                 </div>
-
             </div>
-
         </div>
 
 
-        <div
-            id="housePage"
-            class="page">
-
+        <div id="housePage" class="page">
             <div class="content">
-
                 <div class="card">
-
-                    <h2 class="card-title">
-                        家の記録
-                    </h2>
-
-                    <p style="color:#89949a;font-size:13px;">
-                        家の設備、メンテナンス、庭、芝生などを管理するページです。
+                    <h2 class="card-title">家の記録</h2>
+                    <p style="color:#89949a;font-size:12px;">
+                        家の設備・メンテナンス・庭などを管理します。
                     </p>
-
                 </div>
-
             </div>
-
         </div>
 
 
-        <div
-            id="expensesPage"
-            class="page">
-
+        <div id="expensesPage" class="page">
             <div class="content">
-
                 <div class="card">
-
-                    <h2 class="card-title">
-                        家計
-                    </h2>
-
-                    <p style="color:#89949a;font-size:13px;">
-                        家庭内の支出や月ごとの記録を管理するページです。
+                    <h2 class="card-title">家計</h2>
+                    <p style="color:#89949a;font-size:12px;">
+                        家庭内の支出や月ごとの記録を管理します。
                     </p>
-
                 </div>
-
             </div>
-
         </div>
 
 
-        <div
-            id="tripsPage"
-            class="page">
-
+        <div id="tripsPage" class="page">
             <div class="content">
-
                 <div class="card">
-
-                    <h2 class="card-title">
-                        旅行・おでかけ
-                    </h2>
-
-                    <p style="color:#89949a;font-size:13px;">
-                        家族旅行やおでかけの記録を管理するページです。
+                    <h2 class="card-title">旅行・おでかけ</h2>
+                    <p style="color:#89949a;font-size:12px;">
+                        家族旅行やおでかけの記録を管理します。
                     </p>
-
                 </div>
-
             </div>
-
         </div>
 
 
-        <div
-            id="photosPage"
-            class="page">
-
+        <div id="photosPage" class="page">
             <div class="content">
-
                 <div class="card">
-
-                    <h2 class="card-title">
-                        写真・思い出
-                    </h2>
-
-                    <p style="color:#89949a;font-size:13px;">
-                        家族の写真や思い出をまとめるページです。
+                    <h2 class="card-title">写真・思い出</h2>
+                    <p style="color:#89949a;font-size:12px;">
+                        家族の写真や思い出をまとめます。
                     </p>
-
                 </div>
-
             </div>
-
         </div>
 
 
-        <div
-            id="todoPage"
-            class="page">
-
+        <div id="todoPage" class="page">
             <div class="content">
-
                 <div class="card">
-
-                    <h2 class="card-title">
-                        TODO
-                    </h2>
-
-                    <p style="color:#89949a;font-size:13px;">
-                        家族で共有するTODOを管理するページです。
+                    <h2 class="card-title">TODO</h2>
+                    <p style="color:#89949a;font-size:12px;">
+                        家族で共有するTODOを管理します。
                     </p>
-
                 </div>
-
             </div>
-
         </div>
 
 
-        <div
-            id="settingsPage"
-            class="page">
-
+        <div id="settingsPage" class="page">
             <div class="content">
-
                 <div class="card">
-
-                    <h2 class="card-title">
-                        設定
-                    </h2>
-
-                    <p style="color:#89949a;font-size:13px;">
-                        家族情報やサイト設定を管理するページです。
+                    <h2 class="card-title">設定</h2>
+                    <p style="color:#89949a;font-size:12px;">
+                        家族情報やサイト設定を管理します。
                     </p>
-
                 </div>
-
             </div>
-
         </div>
+
 
     </main>
 
 </div>
 
 
-<!-- ========================================
-     スマホ下部ナビ
-======================================== -->
+<!-- =====================================
+     スマホ下部メニュー
+===================================== -->
 
 <nav class="mobile-nav">
 
@@ -2622,128 +2502,71 @@
 
 <script>
 
-    /* ========================================
-       ページ遷移
-    ======================================== */
+/* =========================================
+   ページ遷移
+========================================= */
 
-    function showPage(pageName) {
+function showPage(pageName) {
 
-        const pages = [
-            "home",
-            "calendar",
-            "children",
-            "house",
-            "expenses",
-            "trips",
-            "photos",
-            "todo",
-            "settings"
-        ];
-
-
-        pages.forEach(function(name) {
-
-            const page =
-                document.getElementById(
-                    name + "Page"
-                );
-
-            if (page) {
-                page.classList.remove("active");
-            }
-
-        });
+    const pages = [
+        "home",
+        "calendar",
+        "children",
+        "house",
+        "expenses",
+        "trips",
+        "photos",
+        "todo",
+        "settings"
+    ];
 
 
-        const targetPage =
+    pages.forEach(function(name) {
+
+        const page =
             document.getElementById(
-                pageName + "Page"
+                name + "Page"
             );
 
-
-        if (targetPage) {
-            targetPage.classList.add("active");
+        if (page) {
+            page.classList.remove("active");
         }
 
-
-        const headerTitle =
-            document.getElementById(
-                "headerTitle"
-            );
+    });
 
 
-        const titles = {
-
-            home: "おかえりなさい",
-
-            calendar: "カレンダー",
-
-            children: "子どもの記録",
-
-            house: "家の記録",
-
-            expenses: "家計",
-
-            trips: "旅行・おでかけ",
-
-            photos: "写真・思い出",
-
-            todo: "TODO",
-
-            settings: "設定"
-
-        };
+    const target =
+        document.getElementById(
+            pageName + "Page"
+        );
 
 
-        headerTitle.textContent =
-            titles[pageName] ||
-            "わが家の記録帳";
-
-
-        document
-            .querySelectorAll(
-                ".nav-item[data-page]"
-            )
-            .forEach(function(button) {
-
-                button.classList.toggle(
-                    "active",
-                    button.dataset.page === pageName
-                );
-
-            });
-
-
-        document
-            .querySelectorAll(
-                ".mobile-nav-item[data-page]"
-            )
-            .forEach(function(button) {
-
-                button.classList.toggle(
-                    "active",
-                    button.dataset.page === pageName
-                );
-
-            });
-
-
-        if (pageName === "calendar") {
-            renderCalendar();
-        }
-
-
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
-
+    if (target) {
+        target.classList.add("active");
     }
 
 
-    /* ========================================
-       PCナビ
-    ======================================== */
+    const titles = {
+
+        home: "おかえりなさい",
+        calendar: "カレンダー",
+        children: "子どもの記録",
+        house: "家の記録",
+        expenses: "家計",
+        trips: "旅行・おでかけ",
+        photos: "写真・思い出",
+        todo: "TODO",
+        settings: "設定"
+
+    };
+
+
+    document.getElementById(
+        "headerTitle"
+    ).textContent =
+        titles[pageName] ||
+        "わが家の記録帳";
+
 
     document
         .querySelectorAll(
@@ -2751,26 +2574,13 @@
         )
         .forEach(function(button) {
 
-            button.addEventListener(
-                "click",
-                function(event) {
-
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    showPage(
-                        this.dataset.page
-                    );
-
-                }
+            button.classList.toggle(
+                "active",
+                button.dataset.page === pageName
             );
 
         });
 
-
-    /* ========================================
-       スマホナビ
-    ======================================== */
 
     document
         .querySelectorAll(
@@ -2778,77 +2588,84 @@
         )
         .forEach(function(button) {
 
-            button.addEventListener(
-                "click",
-                function(event) {
-
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    showPage(
-                        this.dataset.page
-                    );
-
-                }
+            button.classList.toggle(
+                "active",
+                button.dataset.page === pageName
             );
 
         });
 
 
-    /* ========================================
-       ヘッダー日付
-    ======================================== */
-
-    function updateHeaderDate() {
-
-        const now = new Date();
-
-
-        const weekdays = [
-            "日",
-            "月",
-            "火",
-            "水",
-            "木",
-            "金",
-            "土"
-        ];
-
-
-        const text =
-            now.getFullYear() +
-            "年" +
-            (now.getMonth() + 1) +
-            "月" +
-            now.getDate() +
-            "日（" +
-            weekdays[now.getDay()] +
-            "）";
-
-
-        document.getElementById(
-            "headerDate"
-        ).textContent = text;
-
+    if (pageName === "calendar") {
+        renderCalendar();
     }
 
 
-    updateHeaderDate();
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
 
 
-    /* ========================================
-       カレンダー
-    ======================================== */
+/* =========================================
+   PCナビ
+========================================= */
 
-    let currentCalendarDate =
-        new Date(2026, 9, 1);
+document
+    .querySelectorAll(
+        ".nav-item[data-page]"
+    )
+    .forEach(function(button) {
+
+        button.addEventListener(
+            "click",
+            function() {
+
+                showPage(
+                    this.dataset.page
+                );
+
+            }
+        );
+
+    });
 
 
-    let selectedDate =
-        new Date(2026, 9, 6);
+/* =========================================
+   スマホナビ
+========================================= */
+
+document
+    .querySelectorAll(
+        ".mobile-nav-item[data-page]"
+    )
+    .forEach(function(button) {
+
+        button.addEventListener(
+            "click",
+            function() {
+
+                showPage(
+                    this.dataset.page
+                );
+
+            }
+        );
+
+    });
 
 
-    const weekdayNames = [
+/* =========================================
+   ヘッダー日付
+========================================= */
+
+function updateHeaderDate() {
+
+    const now = new Date();
+
+    const weekdays = [
         "日",
         "月",
         "火",
@@ -2858,542 +2675,456 @@
         "土"
     ];
 
+    document.getElementById(
+        "headerDate"
+    ).textContent =
+        now.getFullYear() +
+        "年" +
+        (now.getMonth() + 1) +
+        "月" +
+        now.getDate() +
+        "日（" +
+        weekdays[now.getDay()] +
+        "）";
 
-    /* ========================================
-       サンプル予定
-    ======================================== */
+}
 
-    const calendarEvents = {
+updateHeaderDate();
 
-        "2026-10-03": [
 
-            {
-                time: "10:00",
-                title: "群馬サファリパーク",
-                category: "travel"
-            }
+/* =========================================
+   カレンダー
+========================================= */
 
-        ],
+let currentCalendarDate =
+    new Date(2026, 9, 1);
 
 
-        "2026-10-04": [
+let selectedDate =
+    new Date(2026, 9, 6);
 
-            {
-                time: "00:00",
-                title: "妹ちゃん 2歳の誕生日",
-                category: "child"
-            },
 
-            {
-                time: "15:00",
-                title: "ホテルチェックイン",
-                category: "travel"
-            }
+const weekdayNames = [
+    "日",
+    "月",
+    "火",
+    "水",
+    "木",
+    "金",
+    "土"
+];
 
-        ],
 
+const calendarEvents = {
 
-        "2026-10-05": [
+    "2026-10-03": [
 
-            {
-                time: "10:00",
-                title: "軽井沢から帰宅",
-                category: "travel"
-            }
+        {
+            time: "10:00",
+            title: "群馬サファリパーク",
+            category: "travel"
+        }
 
-        ],
+    ],
 
 
-        "2026-10-06": [
+    "2026-10-04": [
 
-            {
-                time: "09:00",
-                title: "保育園",
-                category: "child"
-            },
+        {
+            time: "00:00",
+            title: "妹ちゃん 2歳の誕生日",
+            category: "child"
+        },
 
-            {
-                time: "17:30",
-                title: "お迎え",
-                category: "family"
-            },
+        {
+            time: "15:00",
+            title: "ホテルチェックイン",
+            category: "travel"
+        }
 
-            {
-                time: "21:00",
-                title: "子どもたち就寝",
-                category: "family"
-            }
+    ],
 
-        ],
 
+    "2026-10-05": [
 
-        "2026-10-07": [
+        {
+            time: "10:00",
+            title: "軽井沢から帰宅",
+            category: "travel"
+        }
 
-            {
-                time: "09:00",
-                title: "保育園",
-                category: "child"
-            }
+    ],
 
-        ],
 
+    "2026-10-06": [
 
-        "2026-10-10": [
+        {
+            time: "09:00",
+            title: "保育園",
+            category: "child"
+        },
 
-            {
-                time: "09:30",
-                title: "家族でおでかけ",
-                category: "family"
-            }
+        {
+            time: "17:30",
+            title: "お迎え",
+            category: "family"
+        },
 
-        ],
+        {
+            time: "21:00",
+            title: "子どもたち就寝",
+            category: "family"
+        }
 
+    ],
 
-        "2026-10-12": [
 
-            {
-                time: "09:00",
-                title: "スポーツの日",
-                category: "family"
-            }
+    "2026-10-07": [
 
-        ],
+        {
+            time: "09:00",
+            title: "保育園",
+            category: "child"
+        }
 
+    ],
 
-        "2026-10-17": [
 
-            {
-                time: "10:00",
-                title: "芝生の手入れ",
-                category: "home"
-            }
+    "2026-10-10": [
 
-        ],
+        {
+            time: "09:30",
+            title: "家族でおでかけ",
+            category: "family"
+        }
 
+    ],
 
-        "2026-10-24": [
 
-            {
-                time: "09:00",
-                title: "家のメンテナンス",
-                category: "home"
-            }
+    "2026-10-12": [
 
-        ]
+        {
+            time: "09:00",
+            title: "スポーツの日",
+            category: "family"
+        }
 
-    };
+    ],
 
 
-    /* ========================================
-       日付キー
-    ======================================== */
+    "2026-10-17": [
 
-    function formatDateKey(date) {
+        {
+            time: "10:00",
+            title: "芝生の手入れ",
+            category: "home"
+        }
 
-        const year =
-            date.getFullYear();
+    ],
 
 
-        const month =
-            String(
-                date.getMonth() + 1
-            ).padStart(2, "0");
+    "2026-10-24": [
 
+        {
+            time: "09:00",
+            title: "家のメンテナンス",
+            category: "home"
+        }
 
-        const day =
-            String(
-                date.getDate()
-            ).padStart(2, "0");
+    ]
 
+};
 
-        return (
-            year +
-            "-" +
-            month +
-            "-" +
-            day
-        );
 
-    }
+/* =========================================
+   日付キー
+========================================= */
 
+function formatDateKey(date) {
 
-    /* ========================================
-       今日判定
-    ======================================== */
+    const year =
+        date.getFullYear();
 
-    function isToday(date) {
+    const month =
+        String(
+            date.getMonth() + 1
+        ).padStart(2, "0");
 
-        const now = new Date();
+    const day =
+        String(
+            date.getDate()
+        ).padStart(2, "0");
 
+    return (
+        year +
+        "-" +
+        month +
+        "-" +
+        day
+    );
 
-        return (
+}
 
-            date.getFullYear() ===
-                now.getFullYear()
 
-            &&
+/* =========================================
+   今日判定
+========================================= */
 
-            date.getMonth() ===
-                now.getMonth()
+function isToday(date) {
 
-            &&
+    const now = new Date();
 
-            date.getDate() ===
-                now.getDate()
+    return (
 
-        );
+        date.getFullYear() ===
+        now.getFullYear()
 
-    }
+        &&
 
+        date.getMonth() ===
+        now.getMonth()
 
-    /* ========================================
-       カレンダー描画
-    ======================================== */
+        &&
 
-    function renderCalendar() {
+        date.getDate() ===
+        now.getDate()
 
-        const grid =
-            document.getElementById(
-                "calendarGrid"
-            );
+    );
 
+}
 
-        grid.innerHTML = "";
 
+/* =========================================
+   カレンダー描画
+========================================= */
 
-        const year =
-            currentCalendarDate.getFullYear();
+function renderCalendar() {
 
-
-        const month =
-            currentCalendarDate.getMonth();
-
-
+    const grid =
         document.getElementById(
-            "calendarMonthTitle"
-        ).textContent =
-            year +
-            "年" +
-            (month + 1) +
-            "月";
-
-
-        /* 曜日 */
-
-        weekdayNames.forEach(
-            function(day, index) {
-
-                const weekday =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                weekday.className =
-                    "weekday";
-
-
-                if (index === 0) {
-
-                    weekday.classList.add(
-                        "sunday"
-                    );
-
-                }
-
-
-                if (index === 6) {
-
-                    weekday.classList.add(
-                        "saturday"
-                    );
-
-                }
-
-
-                weekday.textContent =
-                    day;
-
-
-                grid.appendChild(
-                    weekday
-                );
-
-            }
+            "calendarGrid"
         );
 
 
-        /* 月初 */
-
-        const firstDay =
-            new Date(
-                year,
-                month,
-                1
-            );
+    grid.innerHTML = "";
 
 
-        const startDay =
-            firstDay.getDay();
+    const year =
+        currentCalendarDate.getFullYear();
 
 
-        /* 月末 */
-
-        const lastDay =
-            new Date(
-                year,
-                month + 1,
-                0
-            );
+    const month =
+        currentCalendarDate.getMonth();
 
 
-        const daysInMonth =
-            lastDay.getDate();
+    document.getElementById(
+        "calendarMonthTitle"
+    ).textContent =
+        year +
+        "年" +
+        (month + 1) +
+        "月";
 
 
-        /* 前月末 */
+    weekdayNames.forEach(
+        function(day, index) {
 
-        const previousLastDay =
-            new Date(
-                year,
-                month,
-                0
-            ).getDate();
-
-
-        const totalCells = 42;
-
-
-        for (
-            let cellIndex = 0;
-            cellIndex < totalCells;
-            cellIndex++
-        ) {
-
-            let dayNumber;
-
-            let cellDate;
-
-            let otherMonth = false;
-
-
-            if (cellIndex < startDay) {
-
-                dayNumber =
-                    previousLastDay -
-                    startDay +
-                    cellIndex +
-                    1;
-
-
-                cellDate =
-                    new Date(
-                        year,
-                        month - 1,
-                        dayNumber
-                    );
-
-
-                otherMonth = true;
-
-            }
-
-
-            else if (
-                cellIndex >=
-                startDay +
-                daysInMonth
-            ) {
-
-                dayNumber =
-                    cellIndex -
-                    startDay -
-                    daysInMonth +
-                    1;
-
-
-                cellDate =
-                    new Date(
-                        year,
-                        month + 1,
-                        dayNumber
-                    );
-
-
-                otherMonth = true;
-
-            }
-
-
-            else {
-
-                dayNumber =
-                    cellIndex -
-                    startDay +
-                    1;
-
-
-                cellDate =
-                    new Date(
-                        year,
-                        month,
-                        dayNumber
-                    );
-
-            }
-
-
-            const cell =
+            const weekday =
                 document.createElement(
                     "div"
                 );
 
 
-            cell.className =
-                "day-cell";
+            weekday.className =
+                "weekday";
 
 
-            if (otherMonth) {
-
-                cell.classList.add(
-                    "other-month"
+            if (index === 0) {
+                weekday.classList.add(
+                    "sunday"
                 );
-
             }
 
 
-            if (isToday(cellDate)) {
-
-                cell.classList.add(
-                    "today"
+            if (index === 6) {
+                weekday.classList.add(
+                    "saturday"
                 );
-
             }
 
 
-            const number =
-                document.createElement(
-                    "div"
-                );
-
-
-            number.className =
-                "day-number";
-
-
-            number.textContent =
-                dayNumber;
-
-
-            cell.appendChild(
-                number
-            );
-
-
-            const key =
-                formatDateKey(
-                    cellDate
-                );
-
-
-            const events =
-                calendarEvents[key] || [];
-
-
-            events
-                .slice(0, 3)
-                .forEach(
-                    function(event) {
-
-                        const eventElement =
-                            document.createElement(
-                                "div"
-                            );
-
-
-                        eventElement.className =
-                            "calendar-event " +
-                            event.category;
-
-
-                        eventElement.textContent =
-                            event.title;
-
-
-                        eventElement.title =
-                            event.time +
-                            " " +
-                            event.title;
-
-
-                        cell.appendChild(
-                            eventElement
-                        );
-
-                    }
-                );
-
-
-            cell.addEventListener(
-                "click",
-                function() {
-
-                    selectedDate =
-                        new Date(
-                            cellDate
-                        );
-
-
-                    showSelectedDate();
-
-                }
-            );
+            weekday.textContent =
+                day;
 
 
             grid.appendChild(
-                cell
+                weekday
+            );
+
+        }
+    );
+
+
+    const firstDay =
+        new Date(
+            year,
+            month,
+            1
+        );
+
+
+    const startDay =
+        firstDay.getDay();
+
+
+    const lastDay =
+        new Date(
+            year,
+            month + 1,
+            0
+        );
+
+
+    const daysInMonth =
+        lastDay.getDate();
+
+
+    const previousLastDay =
+        new Date(
+            year,
+            month,
+            0
+        ).getDate();
+
+
+    const totalCells = 42;
+
+
+    for (
+        let i = 0;
+        i < totalCells;
+        i++
+    ) {
+
+        let dayNumber;
+        let cellDate;
+        let otherMonth = false;
+
+
+        if (i < startDay) {
+
+            dayNumber =
+                previousLastDay -
+                startDay +
+                i +
+                1;
+
+
+            cellDate =
+                new Date(
+                    year,
+                    month - 1,
+                    dayNumber
+                );
+
+
+            otherMonth = true;
+
+        }
+
+        else if (
+            i >=
+            startDay +
+            daysInMonth
+        ) {
+
+            dayNumber =
+                i -
+                startDay -
+                daysInMonth +
+                1;
+
+
+            cellDate =
+                new Date(
+                    year,
+                    month + 1,
+                    dayNumber
+                );
+
+
+            otherMonth = true;
+
+        }
+
+        else {
+
+            dayNumber =
+                i -
+                startDay +
+                1;
+
+
+            cellDate =
+                new Date(
+                    year,
+                    month,
+                    dayNumber
+                );
+
+        }
+
+
+        const cell =
+            document.createElement(
+                "div"
+            );
+
+
+        cell.className =
+            "day-cell";
+
+
+        if (otherMonth) {
+
+            cell.classList.add(
+                "other-month"
             );
 
         }
 
 
-        showSelectedDate();
+        if (isToday(cellDate)) {
 
-    }
+            cell.classList.add(
+                "today"
+            );
 
-
-    /* ========================================
-       選択日の予定
-    ======================================== */
-
-    function showSelectedDate() {
-
-        const day =
-            selectedDate.getDate();
+        }
 
 
-        const weekday =
-            weekdayNames[
-                selectedDate.getDay()
-            ];
+        const number =
+            document.createElement(
+                "div"
+            );
 
 
-        document.getElementById(
-            "selectedDateDay"
-        ).textContent =
-            day;
+        number.className =
+            "day-number";
 
 
-        document.getElementById(
-            "selectedDateWeekday"
-        ).textContent =
-            weekday +
-            "曜日";
+        number.textContent =
+            dayNumber;
+
+
+        cell.appendChild(
+            number
+        );
 
 
         const key =
             formatDateKey(
-                selectedDate
+                cellDate
             );
 
 
@@ -3401,190 +3132,293 @@
             calendarEvents[key] || [];
 
 
-        const list =
-            document.getElementById(
-                "selectedEventsList"
+        events
+            .slice(0, 3)
+            .forEach(
+                function(event) {
+
+                    const eventElement =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    eventElement.className =
+                        "calendar-event " +
+                        event.category;
+
+
+                    eventElement.textContent =
+                        event.title;
+
+
+                    eventElement.title =
+                        event.time +
+                        " " +
+                        event.title;
+
+
+                    cell.appendChild(
+                        eventElement
+                    );
+
+                }
             );
 
 
-        list.innerHTML = "";
+        cell.addEventListener(
+            "click",
+            function() {
 
-
-        if (events.length === 0) {
-
-            const empty =
-                document.createElement(
-                    "div"
-                );
-
-
-            empty.style.fontSize =
-                "12px";
-
-
-            empty.style.color =
-                "#9aa3a9";
-
-
-            empty.style.padding =
-                "10px 0";
-
-
-            empty.textContent =
-                "この日の予定はありません。";
-
-
-            list.appendChild(
-                empty
-            );
-
-
-            return;
-
-        }
-
-
-        events.forEach(
-            function(event) {
-
-                const row =
-                    document.createElement(
-                        "div"
+                selectedDate =
+                    new Date(
+                        cellDate
                     );
 
-
-                row.className =
-                    "selected-event";
-
-
-                const time =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                time.className =
-                    "selected-event-time";
-
-
-                time.textContent =
-                    event.time;
-
-
-                const name =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                name.className =
-                    "selected-event-name";
-
-
-                name.textContent =
-                    event.title;
-
-
-                row.appendChild(time);
-
-                row.appendChild(name);
-
-
-                list.appendChild(row);
+                showSelectedDate();
 
             }
+        );
+
+
+        grid.appendChild(
+            cell
         );
 
     }
 
 
-    /* ========================================
-       月移動
-    ======================================== */
+    showSelectedDate();
 
-    document
-        .getElementById(
-            "prevMonthButton"
-        )
-        .addEventListener(
-            "click",
-            function() {
-
-                currentCalendarDate =
-                    new Date(
-                        currentCalendarDate.getFullYear(),
-                        currentCalendarDate.getMonth() - 1,
-                        1
-                    );
+}
 
 
-                renderCalendar();
+/* =========================================
+   選択日
+========================================= */
 
-            }
+function showSelectedDate() {
+
+    document.getElementById(
+        "selectedDateDay"
+    ).textContent =
+        selectedDate.getDate();
+
+
+    document.getElementById(
+        "selectedDateWeekday"
+    ).textContent =
+        weekdayNames[
+            selectedDate.getDay()
+        ] +
+        "曜日";
+
+
+    const key =
+        formatDateKey(
+            selectedDate
         );
 
 
-    document
-        .getElementById(
-            "nextMonthButton"
-        )
-        .addEventListener(
-            "click",
-            function() {
-
-                currentCalendarDate =
-                    new Date(
-                        currentCalendarDate.getFullYear(),
-                        currentCalendarDate.getMonth() + 1,
-                        1
-                    );
+    const events =
+        calendarEvents[key] || [];
 
 
-                renderCalendar();
-
-            }
+    const list =
+        document.getElementById(
+            "selectedEventsList"
         );
 
 
-    /* ========================================
-       今日
-    ======================================== */
-
-    document
-        .getElementById(
-            "todayButton"
-        )
-        .addEventListener(
-            "click",
-            function() {
-
-                const now =
-                    new Date();
+    list.innerHTML = "";
 
 
-                currentCalendarDate =
-                    new Date(
-                        now.getFullYear(),
-                        now.getMonth(),
-                        1
-                    );
+    if (events.length === 0) {
+
+        const empty =
+            document.createElement(
+                "div"
+            );
 
 
-                selectedDate =
-                    new Date(now);
+        empty.style.padding =
+            "10px 0";
 
 
-                renderCalendar();
+        empty.style.fontSize =
+            "11px";
 
-            }
+
+        empty.style.color =
+            "#9aa3a9";
+
+
+        empty.textContent =
+            "この日の予定はありません。";
+
+
+        list.appendChild(
+            empty
         );
 
 
-    /* ========================================
-       初期化
-    ======================================== */
+        return;
 
-    renderCalendar();
+    }
+
+
+    events.forEach(
+        function(event) {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "selected-event";
+
+
+            const time =
+                document.createElement(
+                    "div"
+                );
+
+
+            time.className =
+                "selected-event-time";
+
+
+            time.textContent =
+                event.time;
+
+
+            const name =
+                document.createElement(
+                    "div"
+                );
+
+
+            name.className =
+                "selected-event-name";
+
+
+            name.textContent =
+                event.title;
+
+
+            row.appendChild(
+                time
+            );
+
+
+            row.appendChild(
+                name
+            );
+
+
+            list.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   前月
+========================================= */
+
+document
+    .getElementById(
+        "prevMonthButton"
+    )
+    .addEventListener(
+        "click",
+        function() {
+
+            currentCalendarDate =
+                new Date(
+                    currentCalendarDate.getFullYear(),
+                    currentCalendarDate.getMonth() - 1,
+                    1
+                );
+
+
+            renderCalendar();
+
+        }
+    );
+
+
+/* =========================================
+   次月
+========================================= */
+
+document
+    .getElementById(
+        "nextMonthButton"
+    )
+    .addEventListener(
+        "click",
+        function() {
+
+            currentCalendarDate =
+                new Date(
+                    currentCalendarDate.getFullYear(),
+                    currentCalendarDate.getMonth() + 1,
+                    1
+                );
+
+
+            renderCalendar();
+
+        }
+    );
+
+
+/* =========================================
+   今日
+========================================= */
+
+document
+    .getElementById(
+        "todayButton"
+    )
+    .addEventListener(
+        "click",
+        function() {
+
+            const now =
+                new Date();
+
+
+            currentCalendarDate =
+                new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    1
+                );
+
+
+            selectedDate =
+                new Date(now);
+
+
+            renderCalendar();
+
+        }
+    );
+
+
+/* =========================================
+   初期化
+========================================= */
+
+renderCalendar();
 
 </script>
 
