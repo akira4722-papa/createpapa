@@ -2276,6 +2276,62 @@ button {
 
 
 <!-- =======================================================
+     Supabaseログインモーダル
+======================================================= -->
+
+<div
+    class="modal-overlay show"
+    id="authModal">
+
+    <div class="modal">
+
+        <div class="modal-title">
+            わが家の記録帳にログイン
+        </div>
+
+        <div
+            style="margin-bottom:18px;color:#777;font-size:13px;line-height:1.7;">
+            Supabaseに保存した家族の予定を表示します。
+        </div>
+
+        <div class="form-group">
+            <label>メールアドレス</label>
+            <input
+                type="email"
+                id="loginEmail"
+                autocomplete="email"
+                placeholder="family@example.com">
+        </div>
+
+        <div class="form-group">
+            <label>パスワード</label>
+            <input
+                type="password"
+                id="loginPassword"
+                autocomplete="current-password"
+                placeholder="パスワード">
+        </div>
+
+        <div
+            id="loginError"
+            style="display:none;margin-top:8px;color:#d9534f;font-size:12px;line-height:1.6;">
+        </div>
+
+        <div class="modal-buttons">
+            <button
+                class="save-button"
+                id="loginButton"
+                onclick="loginToSupabase()">
+                ログイン
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =======================================================
      予定追加モーダル
 ======================================================= -->
 
@@ -2398,7 +2454,25 @@ button {
 
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
+
+/* =========================================================
+   Supabase設定
+========================================================= */
+
+const SUPABASE_URL = "https://pwgmsbzbnihnemveggsl.supabase.co/rest/v1/";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_9yxCklCNudnEnIlWoGfRgw_kOLcbDxS";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+    );
+
+let currentUser = null;
+
 
 /* =========================================================
    日付
@@ -2421,6 +2495,181 @@ document.getElementById("todayDate").textContent =
     `${today.getMonth() + 1}月` +
     `${today.getDate()}日` +
     `（${weekNames[today.getDay()]}）`;
+
+
+/* =========================================================
+   Supabase認証・予定取得
+========================================================= */
+
+async function initializeSupabaseApp() {
+
+    if (SUPABASE_URL === "YOUR_SUPABASE_URL" ||
+        SUPABASE_PUBLISHABLE_KEY === "YOUR_SUPABASE_PUBLISHABLE_KEY") {
+
+        showLoginError(
+            "index.htmlのSUPABASE_URLとSUPABASE_PUBLISHABLE_KEYを設定してください。"
+        );
+
+        return;
+    }
+
+    const { data, error } =
+        await supabaseClient.auth.getSession();
+
+    if (error) {
+
+        showLoginError(
+            "Supabaseへの接続に失敗しました。"
+        );
+
+        console.error(error);
+
+        return;
+    }
+
+    currentUser = data.session?.user || null;
+
+    if (currentUser) {
+
+        document
+            .getElementById("authModal")
+            .classList.remove("show");
+
+    }
+
+    if (!currentUser) {
+
+        document
+            .getElementById("authModal")
+            .classList.add("show");
+
+        return;
+    }
+
+    await loadEventsFromSupabase();
+
+}
+
+
+async function loginToSupabase() {
+
+    const email =
+        document
+            .getElementById("loginEmail")
+            .value
+            .trim();
+
+    const password =
+        document
+            .getElementById("loginPassword")
+            .value;
+
+    if (!email || !password) {
+
+        showLoginError(
+            "メールアドレスとパスワードを入力してください。"
+        );
+
+        return;
+    }
+
+    const button =
+        document.getElementById("loginButton");
+
+    button.disabled = true;
+    button.textContent = "ログイン中…";
+
+    hideLoginError();
+
+    const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+
+    button.disabled = false;
+    button.textContent = "ログイン";
+
+    if (error) {
+
+        showLoginError(
+            "ログインできませんでした。メールアドレスまたはパスワードを確認してください。"
+        );
+
+        console.error(error);
+
+        return;
+    }
+
+    currentUser = data.user;
+
+    document
+        .getElementById("authModal")
+        .classList.remove("show");
+
+    await loadEventsFromSupabase();
+
+}
+
+
+function showLoginError(message) {
+
+    const error =
+        document.getElementById("loginError");
+
+    if (!error) return;
+
+    error.textContent = message;
+    error.style.display = "block";
+
+}
+
+
+function hideLoginError() {
+
+    const error =
+        document.getElementById("loginError");
+
+    if (!error) return;
+
+    error.textContent = "";
+    error.style.display = "none";
+
+}
+
+
+async function loadEventsFromSupabase() {
+
+    const { data, error } =
+        await supabaseClient
+            .from("family_events")
+            .select("id, event_date, event_time, title, category")
+            .order("event_date", { ascending: true })
+            .order("event_time", { ascending: true });
+
+    if (error) {
+
+        alert(
+            "予定の取得に失敗しました。\n\n" +
+            error.message
+        );
+
+        console.error(error);
+
+        return;
+    }
+
+    events = (data || []).map(event => ({
+        id: event.id,
+        date: event.event_date,
+        time: event.event_time ? event.event_time.slice(0, 5) : "",
+        title: event.title,
+        category: event.category
+    }));
+
+    renderCalendar();
+
+}
 
 
 /* =========================================================
@@ -2625,153 +2874,7 @@ let selectedDate =
     }
 */
 
-let events = [
-
-    {
-        id: 1,
-        date: "2026-10-01",
-        time: "09:30",
-        title: "予防接種",
-        category: "child"
-    },
-
-    {
-        id: 2,
-        date: "2026-10-02",
-        time: "15:00",
-        title: "参観日",
-        category: "family"
-    },
-
-    {
-        id: 3,
-        date: "2026-10-03",
-        time: "",
-        title: "軽井沢旅行",
-        category: "travel"
-    },
-
-    {
-        id: 4,
-        date: "2026-10-04",
-        time: "",
-        title: "妹ちゃん誕生日",
-        category: "child"
-    },
-
-    {
-        id: 5,
-        date: "2026-10-06",
-        time: "08:00",
-        title: "保育園",
-        category: "child"
-    },
-
-    {
-        id: 6,
-        date: "2026-10-06",
-        time: "15:00",
-        title: "在宅勤務",
-        category: "work"
-    },
-
-    {
-        id: 7,
-        date: "2026-10-06",
-        time: "17:00",
-        title: "燃えるゴミ",
-        category: "home"
-    },
-
-    {
-        id: 8,
-        date: "2026-10-06",
-        time: "21:00",
-        title: "子どもたち就寝",
-        category: "family"
-    },
-
-    {
-        id: 9,
-        date: "2026-10-08",
-        time: "10:00",
-        title: "乳児健診",
-        category: "child"
-    },
-
-    {
-        id: 10,
-        date: "2026-10-10",
-        time: "",
-        title: "家族でおでかけ",
-        category: "family"
-    },
-
-    {
-        id: 11,
-        date: "2026-10-14",
-        time: "",
-        title: "歯科検診",
-        category: "child"
-    },
-
-    {
-        id: 12,
-        date: "2026-10-18",
-        time: "",
-        title: "家族旅行",
-        category: "travel"
-    },
-
-    {
-        id: 13,
-        date: "2026-10-21",
-        time: "19:00",
-        title: "みんなでごはん",
-        category: "family"
-    },
-
-    {
-        id: 14,
-        date: "2026-10-22",
-        time: "15:00",
-        title: "仕事",
-        category: "work"
-    },
-
-    {
-        id: 15,
-        date: "2026-10-24",
-        time: "",
-        title: "保育園イベント",
-        category: "child"
-    },
-
-    {
-        id: 16,
-        date: "2026-10-25",
-        time: "",
-        title: "車の点検",
-        category: "home"
-    },
-
-    {
-        id: 17,
-        date: "2026-10-28",
-        time: "",
-        title: "ワクチン接種",
-        category: "pet"
-    },
-
-    {
-        id: 18,
-        date: "2026-10-31",
-        time: "",
-        title: "ハロウィン",
-        category: "family"
-    }
-
-];
+let events = [];
 
 
 /* =========================================================
@@ -3684,7 +3787,7 @@ function closeEventModal() {
 }
 
 
-function saveEvent() {
+async function saveEvent() {
 
     const date =
         document.getElementById(
@@ -3718,29 +3821,74 @@ function saveEvent() {
     }
 
 
+    if (!currentUser) {
+
+        document
+            .getElementById("authModal")
+            .classList.add("show");
+
+        return;
+
+    }
+
+
+    const button =
+        document.querySelector(
+            "#eventModal .save-button"
+        );
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "保存中…";
+    }
+
+
+    const { data, error } =
+        await supabaseClient
+            .from("family_events")
+            .insert({
+                user_id: currentUser.id,
+                event_date: date,
+                event_time: time || null,
+                title: title,
+                category: category
+            })
+            .select("id, event_date, event_time, title, category")
+            .single();
+
+
+    if (button) {
+        button.disabled = false;
+        button.textContent = "保存";
+    }
+
+
+    if (error) {
+
+        alert(
+            "予定の保存に失敗しました。\n\n" +
+            error.message
+        );
+
+        console.error(error);
+
+        return;
+
+    }
+
+
     events.push({
-
-        id:
-            Date.now(),
-
-        date:
-            date,
-
-        time:
-            time,
-
-        title:
-            title,
-
-        category:
-            category
-
+        id: data.id,
+        date: data.event_date,
+        time: data.event_time
+            ? data.event_time.slice(0, 5)
+            : "",
+        title: data.title,
+        category: data.category
     });
 
 
-    selectedDate =
-        date;
-
+    selectedDate = date;
 
     calendarDate =
         new Date(
@@ -3785,10 +3933,20 @@ document
 
 
 /* =========================================================
-   初期描画
+   初期化
 ========================================================= */
 
-renderCalendar();
+initializeSupabaseApp();
+
+document
+    .getElementById("loginPassword")
+    .addEventListener("keydown", function(e) {
+
+        if (e.key === "Enter") {
+            loginToSupabase();
+        }
+
+    });
 
 </script>
 
