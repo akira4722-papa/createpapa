@@ -1070,6 +1070,27 @@ button {
     font-weight: 700;
 }
 
+
+.delete-button {
+    background: #fff0ef;
+    color: #c0392b;
+    border: 1px solid #f2c5c1 !important;
+}
+
+.detail-value {
+    padding: 12px 13px;
+    border-radius: 10px;
+    background: #f7f8f6;
+    color: #333;
+    overflow-wrap: anywhere;
+}
+
+.detail-label {
+    margin: 0 0 6px;
+    color: #777;
+    font-size: 12px;
+}
+
 .form-group {
     margin-bottom: 15px;
 }
@@ -2454,6 +2475,37 @@ button {
 
 
 
+<!-- =======================================================
+     予定詳細モーダル
+======================================================= -->
+<div class="modal-overlay" id="eventDetailModal" role="dialog" aria-modal="true" aria-labelledby="eventDetailTitle">
+    <div class="modal">
+        <div class="modal-title" id="eventDetailTitle">予定の詳細</div>
+
+        <div class="form-group">
+            <div class="detail-label">予定</div>
+            <div class="detail-value" id="detailEventTitle"></div>
+        </div>
+        <div class="form-group">
+            <div class="detail-label">日付</div>
+            <div class="detail-value" id="detailEventDate"></div>
+        </div>
+        <div class="form-group">
+            <div class="detail-label">時刻</div>
+            <div class="detail-value" id="detailEventTime"></div>
+        </div>
+        <div class="form-group">
+            <div class="detail-label">カテゴリ</div>
+            <div class="detail-value" id="detailEventCategory"></div>
+        </div>
+
+        <div class="modal-buttons">
+            <button class="delete-button" id="deleteEventButton" type="button" onclick="deleteSelectedEvent()">予定を削除</button>
+            <button class="cancel-button" type="button" onclick="closeEventDetailModal()">閉じる</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -2462,8 +2514,8 @@ button {
    Supabase設定
 ========================================================= */
 
-const SUPABASE_URL = "https://pwgmsbzbnihnemveggsl.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_9yxCklCNudnEnIlWoGfRgw_kOLcbDxS";
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_PUBLISHABLE_KEY = "YOUR_SUPABASE_PUBLISHABLE_KEY";
 
 const supabaseClient =
     window.supabase.createClient(
@@ -2874,6 +2926,8 @@ let selectedDate =
     }
 */
 
+let selectedEventForDetail = null;
+
 let events = [];
 
 
@@ -3195,20 +3249,10 @@ function renderCalendar() {
                             : event.title;
 
 
-                    element.onclick =
-                        (e) => {
-
-                            e.stopPropagation();
-
-                            alert(
-                                `${event.title}\n` +
-                                `${event.date}` +
-                                `${event.time
-                                    ? " " + event.time
-                                    : ""}`
-                            );
-
-                        };
+                    element.onclick = (e) => {
+                        e.stopPropagation();
+                        openEventDetailModal(event);
+                    };
 
 
                     cell.appendChild(
@@ -3745,6 +3789,86 @@ function changeCalendarView(
 
 
 /* =========================================================
+   予定詳細・削除
+========================================================= */
+
+const eventCategoryLabels = {
+    child: "子ども",
+    family: "家族",
+    work: "仕事",
+    home: "家",
+    travel: "旅行",
+    pet: "ペット"
+};
+
+function openEventDetailModal(event) {
+    selectedEventForDetail = event;
+
+    document.getElementById("detailEventTitle").textContent = event.title || "（予定名なし）";
+    document.getElementById("detailEventDate").textContent = event.date || "日付なし";
+    document.getElementById("detailEventTime").textContent = event.time || "時刻指定なし";
+    document.getElementById("detailEventCategory").textContent = eventCategoryLabels[event.category] || event.category || "未分類";
+
+    const deleteButton = document.getElementById("deleteEventButton");
+    deleteButton.disabled = false;
+    deleteButton.textContent = "予定を削除";
+
+    document.getElementById("eventDetailModal").classList.add("show");
+}
+
+function closeEventDetailModal() {
+    document.getElementById("eventDetailModal").classList.remove("show");
+    selectedEventForDetail = null;
+}
+
+async function deleteSelectedEvent() {
+    const event = selectedEventForDetail;
+
+    if (!event || !event.id) {
+        alert("削除する予定を特定できませんでした。カレンダーを再読み込みしてお試しください。");
+        return;
+    }
+
+    if (!currentUser) {
+        alert("ログイン状態を確認できません。もう一度ログインしてください。");
+        closeEventDetailModal();
+        document.getElementById("authModal").classList.add("show");
+        return;
+    }
+
+    const confirmed = window.confirm(`「${event.title}」を削除しますか？\nこの操作は取り消せません。`);
+    if (!confirmed) return;
+
+    const button = document.getElementById("deleteEventButton");
+    button.disabled = true;
+    button.textContent = "削除中…";
+
+    try {
+        const { data, error } = await supabaseClient
+            .from("family_events")
+            .delete()
+            .eq("id", event.id)
+            .eq("user_id", currentUser.id)
+            .select("id");
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            throw new Error("予定が削除されませんでした。ログイン状態やデータベースの権限設定を確認してください。");
+        }
+
+        events = events.filter(item => item.id !== event.id);
+        closeEventDetailModal();
+        renderCalendar();
+    } catch (error) {
+        console.error("予定の削除に失敗しました:", error);
+        alert("予定の削除に失敗しました。\n\n" + (error.message || "原因不明のエラー"));
+        button.disabled = false;
+        button.textContent = "予定を削除";
+    }
+}
+
+/* =========================================================
    予定追加
 ========================================================= */
 
@@ -3909,6 +4033,10 @@ async function saveEvent() {
 
 }
 
+
+document.getElementById("eventDetailModal").addEventListener("click", function(e) {
+    if (e.target === this) closeEventDetailModal();
+});
 
 /* =========================================================
    モーダル外クリック
