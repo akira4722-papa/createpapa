@@ -57,7 +57,7 @@
     </div>
     <div class="journal-list" id="journalList"></div>
   </section>
-  <p class="pet-demo-note">モック画面：入力内容と写真は、このブラウザ内にサンプルとして保存されます。家族間の共有やSupabaseへの保存は、次の実装で接続します。</p>
+  <p class="pet-demo-note" id="petStatus">Supabaseに接続しています…</p>
 </main>
 
 <nav class="mobile-nav">
@@ -106,6 +106,19 @@
 </div>
 
 <div class="pet-lightbox" id="photoLightbox" aria-hidden="true"><button id="closeLightbox" aria-label="写真を閉じる">×</button><img id="lightboxImage" alt="添付写真の拡大表示"></div>
+<div class="pet-modal-backdrop" id="petLoginModal" aria-hidden="true">
+  <section class="pet-modal" role="dialog" aria-modal="true" aria-labelledby="petLoginTitle">
+    <div class="pet-modal-head"><div><span class="modal-eyebrow">FAMILY PET LOG</span><h2 id="petLoginTitle">家族アカウントでログイン</h2></div></div>
+    <form id="petLoginForm">
+      <p>家族の記録を共有するため、わが家の記録帳と同じアカウントでログインしてください。</p>
+      <label>メールアドレス<input id="petLoginEmail" type="email" autocomplete="username" required></label>
+      <label>パスワード<input id="petLoginPassword" type="password" autocomplete="current-password" required></label>
+      <p id="petLoginError" role="alert" style="color:#b42318"></p>
+      <div class="pet-form-actions"><button type="submit" class="pet-primary" id="petLoginButton">ログイン</button><button type="button" class="pet-secondary" onclick="location.href='home.html'">ホームへ戻る</button></div>
+    </form>
+  </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/pet.js"></script>
 </body>
 </html>
