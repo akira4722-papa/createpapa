@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f3">
+<title>ペット | わが家の記録帳</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/pet.css">
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo">🏠 わが家の記録帳<small>Family Dashboard</small></div>
+  <button class="nav-item" type="button" onclick="location.href='home.html'">🏠 ホーム</button>
+  <button class="nav-item" type="button" onclick="location.href='calendar.html'">📅 カレンダー</button>
+  <button class="nav-item">👧 子どもたちの記録</button>
+  <button class="nav-item">🏡 家の管理</button>
+  <button class="nav-item">💰 家計・支出</button>
+  <button class="nav-item">🚗 旅行・おでかけ</button>
+  <button class="nav-item">🌱 庭・芝生</button>
+  <button class="nav-item active" type="button" onclick="location.href='pet.html'">🐈 ペット</button>
+  <button class="nav-item">📷 写真・思い出</button>
+  <button class="nav-item">📝 メモ・Todo</button>
+  <button class="nav-item">⚙️ 設定</button>
+</aside>
+
+<main class="main pet-main">
+  <header class="header pet-header">
+    <div>
+      <div class="date" id="petToday"></div>
+      <div class="header-title">🐾 ペットの記録</div>
+      <p class="pet-subtitle">いつもの様子も、小さな変化も。家族みんなで残そう。</p>
+    </div>
+    <button class="pet-primary pet-add-top" id="addPetTop">＋ ペットを追加</button>
+  </header>
+
+  <section class="pet-switcher-section">
+    <div class="section-heading"><div><h2>うちのペット</h2><p>ペットごとにプロフィールと記録を管理</p></div><span class="mini-count" id="petCount">1匹</span></div>
+    <div class="pet-switcher" id="petSwitcher"></div>
+  </section>
+
+  <section class="pet-profile-card" id="petProfile"></section>
+
+  <section class="pet-journal-section">
+    <div class="section-heading journal-heading">
+      <div><h2>健康・通院日記</h2><p>異変に気づいたときや、病院で聞いたことをメモ</p></div>
+      <button class="pet-primary" id="addEntryTop">＋ 記録する</button>
+    </div>
+    <div class="journal-toolbar">
+      <div class="journal-filters" role="group" aria-label="記録の種類">
+        <button class="filter-chip active" data-filter="all">すべて</button>
+        <button class="filter-chip" data-filter="daily">日々の様子</button>
+        <button class="filter-chip" data-filter="symptom">異変・症状</button>
+        <button class="filter-chip" data-filter="vet">通院</button>
+        <button class="filter-chip" data-filter="medicine">薬・処置</button>
+      </div>
+      <label class="journal-search"><span>⌕</span><input id="journalSearch" type="search" placeholder="記録を検索"></label>
+    </div>
+    <div class="journal-list" id="journalList"></div>
+  </section>
+  <p class="pet-demo-note">モック画面：入力内容と写真は、このブラウザ内にサンプルとして保存されます。家族間の共有やSupabaseへの保存は、次の実装で接続します。</p>
+</main>
+
+<nav class="mobile-nav">
+  <button class="mobile-nav-item" type="button" onclick="location.href='home.html'"><span>🏠</span>ホーム</button>
+  <button class="mobile-nav-item" type="button" onclick="location.href='calendar.html'"><span>📅</span>予定</button>
+  <button class="mobile-nav-item active" type="button" onclick="location.href='pet.html'"><span>🐈</span>ペット</button>
+  <button class="mobile-nav-item"><span>👨‍👩‍👧‍👧</span>家族</button>
+  <button class="mobile-nav-item"><span>☰</span>その他</button>
+</nav>
+
+<div class="pet-modal-backdrop" id="petModal" aria-hidden="true">
+  <section class="pet-modal" role="dialog" aria-modal="true" aria-labelledby="petModalTitle">
+    <div class="pet-modal-head"><div><span class="modal-eyebrow">FAMILY PET LOG</span><h2 id="petModalTitle">記録を追加</h2></div><button class="icon-close" id="closePetModal" aria-label="閉じる">×</button></div>
+    <form id="entryForm">
+      <div class="pet-form-grid">
+        <label>日付<input type="date" id="entryDate" required></label>
+        <label>記録の種類<select id="entryType"><option value="daily">日々の様子</option><option value="symptom">異変・症状</option><option value="vet">通院</option><option value="medicine">薬・処置</option></select></label>
+      </div>
+      <label>タイトル<input id="entryTitle" maxlength="90" placeholder="例：食欲がいつもより少ない" required></label>
+      <label>メモ<textarea id="entryBody" rows="4" placeholder="気づいたこと、症状が出た時間、先生からの説明など"></textarea></label>
+      <div class="pet-form-grid optional-fields" id="vetFields">
+        <label>病院・先生<input id="entryClinic" placeholder="病院名など"></label>
+        <label>薬・診察内容<input id="entryTreatment" placeholder="処方薬、診断、次回予約など"></label>
+      </div>
+      <div class="photo-upload-area">
+        <div class="photo-upload-copy"><strong>写真を添付</strong><span>患部・皮膚の様子・診療明細など。複数選択できます。</span></div>
+        <label class="photo-pick-button">📷 写真を選ぶ<input id="entryPhotos" type="file" accept="image/*" multiple></label>
+        <div class="upload-preview" id="uploadPreview"></div>
+      </div>
+      <div class="pet-form-actions"><button type="button" class="pet-secondary" id="cancelEntry">キャンセル</button><button type="submit" class="pet-primary" id="saveEntry">記録を保存</button></div>
+    </form>
+  </section>
+</div>
+
+<div class="pet-modal-backdrop" id="profileModal" aria-hidden="true">
+  <section class="pet-modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+    <div class="pet-modal-head"><div><span class="modal-eyebrow">FAMILY PET PROFILE</span><h2 id="profileModalTitle">ペットを追加</h2></div><button class="icon-close" id="closeProfileModal" aria-label="閉じる">×</button></div>
+    <form id="profileForm">
+      <label>名前<input id="profileName" maxlength="50" placeholder="ペットの名前" required></label>
+      <div class="pet-form-grid"><label>生年月日<input type="date" id="profileBirthday"></label><label>種類・品種<input id="profileSpecies" placeholder="例：猫・長毛種"></label></div>
+      <label>プロフィール写真<input type="file" id="profilePhoto" accept="image/*"></label>
+      <div class="upload-preview" id="profilePhotoPreview"></div>
+      <div class="pet-form-actions"><button type="button" class="pet-secondary" id="cancelProfile">キャンセル</button><button type="submit" class="pet-primary">プロフィールを保存</button></div>
+    </form>
+  </section>
+</div>
+
+<div class="pet-lightbox" id="photoLightbox" aria-hidden="true"><button id="closeLightbox" aria-label="写真を閉じる">×</button><img id="lightboxImage" alt="添付写真の拡大表示"></div>
+<script src="js/pet.js"></script>
+</body>
+</html>
