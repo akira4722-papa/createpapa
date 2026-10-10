@@ -198,6 +198,25 @@ function hideLoginError() {
 }
 
 
+function getEventCategory(categoryKey) {
+    return eventCategories.find(category => category.category_key === categoryKey) || null;
+}
+
+function applyEventCategoryStyle(element, categoryKey, type = "label") {
+    const category = getEventCategory(categoryKey);
+    if (!element || !category) return;
+
+    if (type === "dot") {
+        if (category.text_color) element.style.backgroundColor = category.text_color;
+        else if (category.color) element.style.backgroundColor = category.color;
+        return;
+    }
+
+    if (category.color) element.style.backgroundColor = category.color;
+    if (category.text_color) element.style.color = category.text_color;
+}
+
+
 async function loadEventCategoriesFromSupabase() {
     const select = document.getElementById("eventCategory");
 
@@ -208,7 +227,7 @@ async function loadEventCategoriesFromSupabase() {
 
     const { data, error } = await supabaseClient
         .from("event_categories")
-        .select("category_key, category_name, sort_order")
+        .select("category_key, category_name, sort_order, color, text_color")
         .eq("is_active", true)
         .order("sort_order", { ascending: true })
         .order("category_name", { ascending: true });
@@ -296,6 +315,7 @@ async function loadHomeTodaySchedule() {
             item => item.category_key === event.category
         );
         note.textContent = category ? category.category_name : "カテゴリ未設定";
+        applyEventCategoryStyle(note, event.category);
 
         details.append(title, note);
         item.append(time, details);
@@ -757,8 +777,8 @@ function renderCalendar() {
                             "div"
                         );
 
-                    element.className =
-                        `calendar-event ${event.category}`;
+                    element.className = "calendar-event";
+                    applyEventCategoryStyle(element, event.category);
 
                     element.textContent =
                         event.time
@@ -926,11 +946,9 @@ function renderSelectedDay() {
                     "div"
                 );
 
-            category.className =
-                `selected-event-category ${event.category}`;
-
-
+            category.className = "selected-event-category";
             category.textContent = getEventCategoryName(event.category);
+            applyEventCategoryStyle(category, event.category);
 
 
             row.appendChild(time);
@@ -1001,8 +1019,8 @@ function renderUpcoming() {
                     "div"
                 );
 
-            dot.className =
-                `event-dot ${event.category}`;
+            dot.className = "event-dot";
+            applyEventCategoryStyle(dot, event.category, "dot");
 
 
             const content =
@@ -1127,10 +1145,9 @@ function renderMonthEvents() {
                     "div"
                 );
 
-            category.className =
-                `month-event-category ${event.category}`;
-
+            category.className = "month-event-category";
             category.textContent = getEventCategoryName(event.category);
+            applyEventCategoryStyle(category, event.category);
 
 
             const date =
@@ -1298,7 +1315,11 @@ function openEventDetailModal(event) {
     document.getElementById("detailEventTitle").textContent = event.title || "（予定名なし）";
     document.getElementById("detailEventDate").textContent = event.date || "日付なし";
     document.getElementById("detailEventTime").textContent = event.time || "時刻指定なし";
-    document.getElementById("detailEventCategory").textContent = getEventCategoryName(event.category);
+    const detailCategory = document.getElementById("detailEventCategory");
+    detailCategory.textContent = getEventCategoryName(event.category);
+    detailCategory.style.backgroundColor = "";
+    detailCategory.style.color = "";
+    applyEventCategoryStyle(detailCategory, event.category);
 
     const deleteButton = document.getElementById("deleteEventButton");
     deleteButton.disabled = false;
