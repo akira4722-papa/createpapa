@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f3">
+<title>カレンダー | わが家の記録帳</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<!-- =======================================================
+     PC サイドバー
+======================================================= -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+        🏠 わが家の記録帳
+        <small>Family Dashboard</small>
+    </div>
+
+
+    <button
+        class="nav-item"
+        data-page="home">
+
+        🏠
+        ホーム
+
+    </button>
+
+
+    <button
+        class="nav-item active"
+        data-page="calendar">
+
+        📅
+        カレンダー
+
+    </button>
+
+
+    <button class="nav-item">
+        👧
+        子どもたちの記録
+    </button>
+
+
+    <button class="nav-item">
+        🏡
+        家の管理
+    </button>
+
+
+    <button class="nav-item">
+        💰
+        家計・支出
+    </button>
+
+
+    <button class="nav-item">
+        🚗
+        旅行・おでかけ
+    </button>
+
+
+    <button class="nav-item">
+        🌱
+        庭・芝生
+    </button>
+
+
+    <button class="nav-item">
+        🐈
+        ペット
+    </button>
+
+
+    <button class="nav-item">
+        📷
+        写真・思い出
+    </button>
+
+
+    <button class="nav-item">
+        📝
+        メモ・Todo
+    </button>
+
+
+    <button class="nav-item">
+        ⚙️
+        設定
+    </button>
+
+</aside>
+
+
+
+
+<main class="main">
+<!-- =====================================================
+     共通ヘッダー
+===================================================== -->
+
+<header class="header">
+
+    <div>
+
+        <div
+            class="date"
+            id="todayDate">
+        </div>
+
+        <div
+            class="header-title"
+            id="headerTitle">
+
+            おかえりなさい
+
+        </div>
+
+    </div>
+
+
+    <div class="weather">
+
+        <div class="weather-icon">
+            ☀️
+        </div>
+
+        <div>
+
+            <div class="weather-temp">
+                22℃
+            </div>
+
+            <div
+                style="
+                font-size:10px;
+                color:#999;
+                ">
+
+                土浦周辺
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+
+
+<!-- =====================================================
+     CALENDAR
+===================================================== -->
+
+<section
+    id="calendarPage"
+    class="page active">
+
+
+    <!-- タイトル -->
+
+    <div class="calendar-page-header">
+
+        <div>
+
+            <div class="calendar-page-title">
+                📅 カレンダー
+            </div>
+
+            <div class="calendar-page-subtitle">
+                家族の予定をまとめて確認できます。
+            </div>
+
+        </div>
+
+
+        <button
+            class="primary-button"
+            onclick="openEventModal()">
+
+            ＋ 予定を追加
+
+        </button>
+
+    </div>
+
+
+
+    <!-- 操作 -->
+
+    <div class="calendar-toolbar">
+
+
+        <div class="view-switch">
+
+            <button
+                class="active"
+                onclick="changeCalendarView('month', this)">
+
+                月
+
+            </button>
+
+            <button
+                onclick="changeCalendarView('week', this)">
+
+                週
+
+            </button>
+
+            <button
+                onclick="changeCalendarView('day', this)">
+
+                日
+
+            </button>
+
+        </div>
+
+
+
+        <div class="month-navigation">
+
+            <button onclick="changeMonth(-1)">
+                ‹
+            </button>
+
+            <div
+                class="current-month"
+                id="currentMonth">
+
+            </div>
+
+            <button onclick="changeMonth(1)">
+                ›
+            </button>
+
+            <button
+                class="today-button"
+                onclick="goToday()">
+
+                今日
+
+            </button>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- カレンダー＋右側 -->
+
+    <div class="calendar-layout">
+
+
+        <div>
+
+
+            <div class="calendar-card">
+
+                <div class="calendar-scroll">
+
+                    <div
+                        class="calendar-grid"
+                        id="calendarGrid">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- 選択日の予定 -->
+
+            <div class="selected-day-card">
+
+                <div
+                    class="selected-day-title"
+                    id="selectedDayTitle">
+
+                </div>
+
+                <div
+                    id="selectedDayEvents">
+
+                </div>
+
+            </div>
+
+
+
+            <!-- 今月のイベント -->
+
+            <div class="month-events"
+                 id="monthEvents">
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- 今後の予定 -->
+
+        <aside class="upcoming-card">
+
+            <div class="upcoming-title">
+
+                今後の予定
+
+                <button
+                    class="upcoming-link"
+                    onclick="openEventModal()">
+
+                    ＋追加
+
+                </button>
+
+            </div>
+
+
+            <div id="upcomingEvents">
+
+            </div>
+
+        </aside>
+
+
+    </div>
+
+
+</section>
+
+
+
+</main>
+<!-- =======================================================
+     スマホ下部ナビ
+======================================================= -->
+
+<nav class="mobile-nav">
+
+
+    <button
+        class="mobile-nav-item"
+        data-page="home">
+
+        <span>🏠</span>
+        ホーム
+
+    </button>
+
+
+    <button
+        class="mobile-nav-item active"
+        data-page="calendar">
+
+        <span>📅</span>
+        予定
+
+    </button>
+
+
+    <button class="mobile-nav-item">
+
+        <span>📷</span>
+        記録
+
+    </button>
+
+
+    <button class="mobile-nav-item">
+
+        <span>👨‍👩‍👧‍👧</span>
+        家族
+
+    </button>
+
+
+    <button class="mobile-nav-item">
+
+        <span>☰</span>
+        その他
+
+    </button>
+
+
+</nav>
+
+
+
+
+<!-- =======================================================
+     Supabaseログインモーダル
+======================================================= -->
+
+<div
+    class="modal-overlay show"
+    id="authModal">
+
+    <div class="modal">
+
+        <div class="modal-title">
+            わが家の記録帳にログイン
+        </div>
+
+        <div
+            style="margin-bottom:18px;color:#777;font-size:13px;line-height:1.7;">
+            Supabaseに保存した家族の予定を表示します。
+        </div>
+
+        <div class="form-group">
+            <label>メールアドレス</label>
+            <input
+                type="email"
+                id="loginEmail"
+                autocomplete="email"
+                placeholder="family@example.com">
+        </div>
+
+        <div class="form-group">
+            <label>パスワード</label>
+            <input
+                type="password"
+                id="loginPassword"
+                autocomplete="current-password"
+                placeholder="パスワード">
+        </div>
+
+        <div
+            id="loginError"
+            style="display:none;margin-top:8px;color:#d9534f;font-size:12px;line-height:1.6;">
+        </div>
+
+        <div class="modal-buttons">
+            <button
+                class="save-button"
+                id="loginButton"
+                onclick="loginToSupabase()">
+                ログイン
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =======================================================
+     ＋ボタン
+======================================================= -->
+
+<button
+    class="floating-button"
+    onclick="openEventModal()">
+
+    ＋
+
+</button>
+
+
+
+<!-- =======================================================
+     予定追加モーダル
+======================================================= -->
+
+<div
+    class="modal-overlay"
+    id="eventModal">
+
+
+    <div class="modal">
+
+
+        <div class="modal-title">
+            予定を追加
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                日付
+            </label>
+
+            <input
+                type="date"
+                id="eventDate">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                時刻
+            </label>
+
+            <input
+                type="time"
+                id="eventTime"
+                value="10:00">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                予定
+            </label>
+
+            <input
+                type="text"
+                id="eventTitle"
+                placeholder="例：保育園イベント">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                カテゴリ
+            </label>
+
+            <select id="eventCategory">
+
+                <option value="child">
+                    子ども
+                </option>
+
+                <option value="family">
+                    家族
+                </option>
+
+                <option value="work">
+                    仕事
+                </option>
+
+                <option value="home">
+                    家
+                </option>
+
+                <option value="travel">
+                    旅行
+                </option>
+
+                <option value="pet">
+                    ペット
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="modal-buttons">
+
+            <button
+                class="cancel-button"
+                onclick="closeEventModal()">
+
+                キャンセル
+
+            </button>
+
+
+            <button
+                class="save-button"
+                onclick="saveEvent()">
+
+                保存
+
+            </button>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- =======================================================
+     予定詳細モーダル
+======================================================= -->
+<div class="modal-overlay" id="eventDetailModal" role="dialog" aria-modal="true" aria-labelledby="eventDetailTitle">
+    <div class="modal">
+        <div class="modal-title" id="eventDetailTitle">予定の詳細</div>
+
+        <div class="form-group">
+            <div class="detail-label">予定</div>
+            <div class="detail-value" id="detailEventTitle"></div>
+        </div>
+        <div class="form-group">
+            <div class="detail-label">日付</div>
+            <div class="detail-value" id="detailEventDate"></div>
+        </div>
+        <div class="form-group">
+            <div class="detail-label">時刻</div>
+            <div class="detail-value" id="detailEventTime"></div>
+        </div>
+        <div class="form-group">
+            <div class="detail-label">カテゴリ</div>
+            <div class="detail-value" id="detailEventCategory"></div>
+        </div>
+
+        <div class="modal-buttons">
+            <button class="delete-button" id="deleteEventButton" type="button" onclick="deleteSelectedEvent()">予定を削除</button>
+            <button class="cancel-button" type="button" onclick="closeEventDetailModal()">閉じる</button>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

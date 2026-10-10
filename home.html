@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f3">
+<title>ホーム | わが家の記録帳</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<!-- =======================================================
+     PC サイドバー
+======================================================= -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+        🏠 わが家の記録帳
+        <small>Family Dashboard</small>
+    </div>
+
+
+    <button
+        class="nav-item active"
+        data-page="home">
+
+        🏠
+        ホーム
+
+    </button>
+
+
+    <button
+        class="nav-item"
+        data-page="calendar">
+
+        📅
+        カレンダー
+
+    </button>
+
+
+    <button class="nav-item">
+        👧
+        子どもたちの記録
+    </button>
+
+
+    <button class="nav-item">
+        🏡
+        家の管理
+    </button>
+
+
+    <button class="nav-item">
+        💰
+        家計・支出
+    </button>
+
+
+    <button class="nav-item">
+        🚗
+        旅行・おでかけ
+    </button>
+
+
+    <button class="nav-item">
+        🌱
+        庭・芝生
+    </button>
+
+
+    <button class="nav-item">
+        🐈
+        ペット
+    </button>
+
+
+    <button class="nav-item">
+        📷
+        写真・思い出
+    </button>
+
+
+    <button class="nav-item">
+        📝
+        メモ・Todo
+    </button>
+
+
+    <button class="nav-item">
+        ⚙️
+        設定
+    </button>
+
+</aside>
+
+
+
+
+<main class="main">
+<!-- =====================================================
+     共通ヘッダー
+===================================================== -->
+
+<header class="header">
+
+    <div>
+
+        <div
+            class="date"
+            id="todayDate">
+        </div>
+
+        <div
+            class="header-title"
+            id="headerTitle">
+
+            おかえりなさい
+
+        </div>
+
+    </div>
+
+
+    <div class="weather">
+
+        <div class="weather-icon">
+            ☀️
+        </div>
+
+        <div>
+
+            <div class="weather-temp">
+                22℃
+            </div>
+
+            <div
+                style="
+                font-size:10px;
+                color:#999;
+                ">
+
+                土浦周辺
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+
+
+<!-- =====================================================
+     HOME
+===================================================== -->
+
+<section
+    id="homePage"
+    class="page active">
+
+
+    <section class="hero">
+
+        <div>
+
+            <h1>
+                今日も、わが家の一日を。
+            </h1>
+
+            <p>
+                家族の予定、子どもたちの成長、
+                家のことをひとつの場所に。
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <section class="quick-grid">
+
+
+        <button
+            class="quick-card"
+            onclick="openRecord()">
+
+            <div class="quick-icon">
+                ✏️
+            </div>
+
+            <div class="quick-title">
+                今日の記録
+            </div>
+
+            <div class="quick-desc">
+                今日あったことを残す
+            </div>
+
+        </button>
+
+
+        <button class="quick-card">
+
+            <div class="quick-icon">
+                📷
+            </div>
+
+            <div class="quick-title">
+                写真を残す
+            </div>
+
+            <div class="quick-desc">
+                家族の思い出
+            </div>
+
+        </button>
+
+
+        <button class="quick-card">
+
+            <div class="quick-icon">
+                🏠
+            </div>
+
+            <div class="quick-title">
+                家の記録
+            </div>
+
+            <div class="quick-desc">
+                メンテナンス・設備
+            </div>
+
+        </button>
+
+
+        <button class="quick-card">
+
+            <div class="quick-icon">
+                👧
+            </div>
+
+            <div class="quick-title">
+                成長記録
+            </div>
+
+            <div class="quick-desc">
+                子どもたちの記録
+            </div>
+
+        </button>
+
+
+    </section>
+
+
+
+    <section class="dashboard">
+
+
+        <div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    今日の予定
+
+                    <button
+                        class="card-link"
+                        onclick="showPage('calendar')">
+
+                        すべて見る
+
+                    </button>
+
+                </div>
+
+
+                <div class="schedule-item">
+
+                    <div class="schedule-time">
+                        08:30
+                    </div>
+
+                    <div>
+
+                        <div class="schedule-title">
+                            保育園
+                        </div>
+
+                        <div class="schedule-note">
+                            いつもの登園
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="schedule-item">
+
+                    <div class="schedule-time">
+                        18:00
+                    </div>
+
+                    <div>
+
+                        <div class="schedule-title">
+                            お迎え
+                        </div>
+
+                        <div class="schedule-note">
+                            パパ担当
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="schedule-item">
+
+                    <div class="schedule-time">
+                        21:00
+                    </div>
+
+                    <div>
+
+                        <div class="schedule-title">
+                            子どもたち就寝
+                        </div>
+
+                        <div class="schedule-note">
+                            明日の準備
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+
+            <div
+                class="card"
+                style="margin-top:20px;">
+
+                <div class="card-title">
+
+                    子どもたちのようす
+
+                </div>
+
+
+                <div class="children">
+
+
+                    <div class="child">
+
+                        <div class="child-name">
+                            お姉ちゃん
+                        </div>
+
+                        <div class="child-age">
+                            4歳
+                        </div>
+
+                        <div class="child-note">
+                            🏃 今日も元気いっぱい。<br>
+                            最近は体操が楽しいみたい。
+                        </div>
+
+                    </div>
+
+
+                    <div class="child">
+
+                        <div class="child-name">
+                            妹ちゃん
+                        </div>
+
+                        <div class="child-age">
+                            2歳
+                        </div>
+
+                        <div class="child-note">
+                            🎂 2歳になりました。<br>
+                            これからの一年も楽しみ。
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+
+            <div
+                class="card"
+                style="margin-top:20px;">
+
+                <div class="card-title">
+                    最近の記録
+                </div>
+
+
+                <div class="record">
+
+                    <div class="record-date">
+                        2026/10/05
+                    </div>
+
+                    <div class="record-title">
+                        軽井沢旅行から帰宅
+                    </div>
+
+                    <div class="record-body">
+                        サファリパーク → 軽井沢 →
+                        おもちゃ王国。
+                    </div>
+
+                </div>
+
+
+                <div class="record">
+
+                    <div class="record-date">
+                        2026/10/04
+                    </div>
+
+                    <div class="record-title">
+                        妹ちゃんの誕生日
+                    </div>
+
+                    <div class="record-body">
+                        2歳になりました。
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+
+        <div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    今日やること
+                </div>
+
+
+                <div class="todo">
+                    <input type="checkbox">
+                    <span>保育園の準備</span>
+                </div>
+
+                <div class="todo">
+                    <input type="checkbox">
+                    <span>洗濯物をしまう</span>
+                </div>
+
+                <div class="todo">
+                    <input type="checkbox">
+                    <span>明日の予定確認</span>
+                </div>
+
+
+                <button
+                    class="add-button"
+                    onclick="addTodo()">
+
+                    ＋ Todoを追加
+
+                </button>
+
+            </div>
+
+
+
+            <div
+                class="card"
+                style="margin-top:20px;">
+
+                <div class="card-title">
+                    家のメンテナンス
+                </div>
+
+
+                <div class="record">
+
+                    <div class="record-title">
+                        🌱 芝生
+                    </div>
+
+                    <div class="record-body">
+                        最終：2026/09/28
+                    </div>
+
+                </div>
+
+
+                <div class="record">
+
+                    <div class="record-title">
+                        🚿 エコキュート
+                    </div>
+
+                    <div class="record-body">
+                        点検：2027/01予定
+                    </div>
+
+                </div>
+
+
+                <div class="record">
+
+                    <div class="record-title">
+                        ☀️ 太陽光・蓄電池
+                    </div>
+
+                    <div class="record-body">
+                        稼働中
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+</section>
+
+
+
+
+</main>
+<!-- =======================================================
+     スマホ下部ナビ
+======================================================= -->
+
+<nav class="mobile-nav">
+
+
+    <button
+        class="mobile-nav-item active"
+        data-page="home">
+
+        <span>🏠</span>
+        ホーム
+
+    </button>
+
+
+    <button
+        class="mobile-nav-item"
+        data-page="calendar">
+
+        <span>📅</span>
+        予定
+
+    </button>
+
+
+    <button class="mobile-nav-item">
+
+        <span>📷</span>
+        記録
+
+    </button>
+
+
+    <button class="mobile-nav-item">
+
+        <span>👨‍👩‍👧‍👧</span>
+        家族
+
+    </button>
+
+
+    <button class="mobile-nav-item">
+
+        <span>☰</span>
+        その他
+
+    </button>
+
+
+</nav>
+
+
+
+
+<!-- =======================================================
+     Supabaseログインモーダル
+======================================================= -->
+
+<div
+    class="modal-overlay show"
+    id="authModal">
+
+    <div class="modal">
+
+        <div class="modal-title">
+            わが家の記録帳にログイン
+        </div>
+
+        <div
+            style="margin-bottom:18px;color:#777;font-size:13px;line-height:1.7;">
+            Supabaseに保存した家族の予定を表示します。
+        </div>
+
+        <div class="form-group">
+            <label>メールアドレス</label>
+            <input
+                type="email"
+                id="loginEmail"
+                autocomplete="email"
+                placeholder="family@example.com">
+        </div>
+
+        <div class="form-group">
+            <label>パスワード</label>
+            <input
+                type="password"
+                id="loginPassword"
+                autocomplete="current-password"
+                placeholder="パスワード">
+        </div>
+
+        <div
+            id="loginError"
+            style="display:none;margin-top:8px;color:#d9534f;font-size:12px;line-height:1.6;">
+        </div>
+
+        <div class="modal-buttons">
+            <button
+                class="save-button"
+                id="loginButton"
+                onclick="loginToSupabase()">
+                ログイン
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
