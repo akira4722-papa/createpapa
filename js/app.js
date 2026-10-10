@@ -95,6 +95,11 @@ async function initializeSupabaseApp() {
         await loadEventsFromSupabase();
     }
 
+    if (document.getElementById("todayScheduleList")) {
+        await loadEventCategoriesFromSupabase();
+        await loadHomeTodaySchedule();
+    }
+
 }
 
 
@@ -159,6 +164,11 @@ async function loginToSupabase() {
         await loadEventsFromSupabase();
     }
 
+    if (document.getElementById("todayScheduleList")) {
+        await loadEventCategoriesFromSupabase();
+        await loadHomeTodaySchedule();
+    }
+
 }
 
 
@@ -188,51 +198,35 @@ function hideLoginError() {
 }
 
 
-function getEventCategory(categoryKey) {
-    return eventCategories.find(category => category.category_key === categoryKey) || null;
-}
-
-function getEventCategoryName(categoryKey) {
-    return getEventCategory(categoryKey)?.category_name || "未分類";
-}
-
-function applyEventCategoryStyle(element, categoryKey, type = "label") {
-    const category = getEventCategory(categoryKey);
-    if (!element || !category) return;
-
-    if (type === "dot") {
-        // ドットには、カテゴリ色の濃い色を使用する。
-        if (category.text_color) element.style.backgroundColor = category.text_color;
-        else if (category.color) element.style.backgroundColor = category.color;
-        return;
-    }
-
-    if (category.color) element.style.backgroundColor = category.color;
-    if (category.text_color) element.style.color = category.text_color;
-}
-
 async function loadEventCategoriesFromSupabase() {
     const select = document.getElementById("eventCategory");
-    if (!select) return;
 
-    select.disabled = true;
-    select.innerHTML = '<option value="">カテゴリを読み込み中...</option>';
+    if (select) {
+        select.disabled = true;
+        select.innerHTML = '<option value="">カテゴリを読み込み中...</option>';
+    }
 
     const { data, error } = await supabaseClient
         .from("event_categories")
-        .select("category_key, category_name, sort_order, color, text_color")
+        .select("category_key, category_name, sort_order")
         .eq("is_active", true)
         .order("sort_order", { ascending: true })
         .order("category_name", { ascending: true });
 
     if (error) {
         console.error("カテゴリの取得に失敗しました:", error);
-        select.innerHTML = '<option value="">カテゴリを取得できません</option>';
-        select.disabled = true;
+        eventCategories = [];
+        if (select) {
+            select.innerHTML = '<option value="">カテゴリを取得できません</option>';
+            select.disabled = true;
+        }
         return;
     }
 
     eventCategories = data || [];
+
+    if (!select) return;
+
     select.innerHTML = "";
 
     if (eventCategories.length === 0) {
@@ -249,9 +243,64 @@ async function loadEventCategoriesFromSupabase() {
     });
 
     select.disabled = false;
+}
 
-    // カテゴリ名・色は以降すべて、このDB取得結果から参照する。
-    renderCalendar();
+
+async function loadHomeTodaySchedule() {
+    const list = document.getElementById("todayScheduleList");
+    if (!list) return;
+
+    list.replaceChildren();
+
+    const { data, error } = await supabaseClient
+        .from("family_events")
+        .select("id, event_date, event_time, title, category")
+        .eq("event_date", formatDate(new Date()))
+        .order("event_time", { ascending: true, nullsFirst: false });
+
+    if (error) {
+        console.error("ホームの今日の予定を取得できませんでした:", error);
+        const message = document.createElement("div");
+        message.className = "schedule-empty";
+        message.textContent = "今日の予定を取得できませんでした。";
+        list.appendChild(message);
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        const message = document.createElement("div");
+        message.className = "schedule-empty";
+        message.textContent = "今日の予定は登録されていません。";
+        list.appendChild(message);
+        return;
+    }
+
+    data.forEach(event => {
+        const item = document.createElement("div");
+        item.className = "schedule-item";
+
+        const time = document.createElement("div");
+        time.className = "schedule-time";
+        time.textContent = event.event_time
+            ? event.event_time.slice(0, 5)
+            : "時間未設定";
+
+        const details = document.createElement("div");
+        const title = document.createElement("div");
+        title.className = "schedule-title";
+        title.textContent = event.title || "（予定名なし）";
+
+        const note = document.createElement("div");
+        note.className = "schedule-note";
+        const category = eventCategories.find(
+            item => item.category_key === event.category
+        );
+        note.textContent = category ? category.category_name : "カテゴリ未設定";
+
+        details.append(title, note);
+        item.append(time, details);
+        list.appendChild(item);
+    });
 }
 
 
@@ -393,17 +442,8 @@ let selectedDate =
 
 
 /*
-    後でここをSupabaseから取得する。
-
-    形式：
-
-    {
-        id: 1,
-        date: "2026-10-06",
-        time: "08:30",
-        title: "保育園",
-        category: "child"
-    }
+    予定データはSupabaseから取得する。
+    categoryにはevent_categories.category_keyを保持する。
 */
 
 let selectedEventForDetail = null;
@@ -717,8 +757,8 @@ function renderCalendar() {
                             "div"
                         );
 
-                    element.className = "calendar-event";
-                    applyEventCategoryStyle(element, event.category);
+                    element.className =
+                        `calendar-event ${event.category}`;
 
                     element.textContent =
                         event.time
@@ -886,9 +926,11 @@ function renderSelectedDay() {
                     "div"
                 );
 
-            category.className = "selected-event-category";
+            category.className =
+                `selected-event-category ${event.category}`;
+
+
             category.textContent = getEventCategoryName(event.category);
-            applyEventCategoryStyle(category, event.category);
 
 
             row.appendChild(time);
@@ -959,8 +1001,8 @@ function renderUpcoming() {
                     "div"
                 );
 
-            dot.className = "event-dot";
-            applyEventCategoryStyle(dot, event.category, "dot");
+            dot.className =
+                `event-dot ${event.category}`;
 
 
             const content =
@@ -1085,9 +1127,10 @@ function renderMonthEvents() {
                     "div"
                 );
 
-            category.className = "month-event-category";
+            category.className =
+                `month-event-category ${event.category}`;
+
             category.textContent = getEventCategoryName(event.category);
-            applyEventCategoryStyle(category, event.category);
 
 
             const date =
@@ -1237,17 +1280,25 @@ function changeCalendarView(
    予定詳細・削除
 ========================================================= */
 
+// カテゴリ名はDBから取得したeventCategoriesを共通参照する。
+// DBに存在しない古いカテゴリ値がある場合はキーを表示し、空欄にはしない。
+function getEventCategoryName(categoryKey) {
+    if (!categoryKey) return "未分類";
+
+    const category = eventCategories.find(
+        item => item.category_key === categoryKey
+    );
+
+    return category?.category_name || categoryKey;
+}
+
 function openEventDetailModal(event) {
     selectedEventForDetail = event;
 
     document.getElementById("detailEventTitle").textContent = event.title || "（予定名なし）";
     document.getElementById("detailEventDate").textContent = event.date || "日付なし";
     document.getElementById("detailEventTime").textContent = event.time || "時刻指定なし";
-    const detailCategory = document.getElementById("detailEventCategory");
-    detailCategory.textContent = getEventCategoryName(event.category);
-    detailCategory.style.backgroundColor = "";
-    detailCategory.style.color = "";
-    applyEventCategoryStyle(detailCategory, event.category);
+    document.getElementById("detailEventCategory").textContent = getEventCategoryName(event.category);
 
     const deleteButton = document.getElementById("deleteEventButton");
     deleteButton.disabled = false;
