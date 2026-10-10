@@ -44,7 +44,6 @@
   let pendingProfilePhoto = '';
   let editingEntryId = null;
   const $ = id => document.getElementById(id);
-  $('petToday').textContent = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
   function persist() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); return true; }
     catch (e) { alert('ブラウザ内の保存容量が足りない可能性があります。写真の枚数やサイズを減らしてお試しください。'); return false; }
