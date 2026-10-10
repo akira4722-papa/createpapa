@@ -6,58 +6,6 @@
 <meta name="theme-color" content="#f5f5f3">
 <title>カレンダー | わが家の記録帳</title>
 <link rel="stylesheet" href="css/style.css">
-<style>
-/* 予定追加モーダル：すべての入力欄を同じ幅に統一 */
-#eventModal .modal {
-    box-sizing: border-box;
-    min-width: 0;
-    width: 100%;
-    max-width: 450px;
-}
-
-#eventModal .form-group {
-    display: block;
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-}
-
-#eventModal .form-group input,
-#eventModal .form-group select,
-#eventModal .form-group input[type="date"],
-#eventModal .form-group input[type="time"] {
-    display: block;
-    box-sizing: border-box !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
-    margin: 0;
-    font: inherit;
-}
-
-@media (max-width: 760px) {
-    #eventModal {
-        box-sizing: border-box;
-        padding: 14px;
-    }
-
-    #eventModal .modal {
-        width: 100%;
-        max-width: 450px;
-        padding: 20px 16px;
-    }
-
-    #eventModal .form-group input,
-    #eventModal .form-group select,
-    #eventModal .form-group input[type="date"],
-    #eventModal .form-group input[type="time"] {
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
-        padding: 10px 8px;
-    }
-}
-</style>
 </head>
 <body>
 <!-- =======================================================
@@ -588,32 +536,8 @@
                 カテゴリ
             </label>
 
-            <select id="eventCategory">
-
-                <option value="child">
-                    子ども
-                </option>
-
-                <option value="family">
-                    家族
-                </option>
-
-                <option value="work">
-                    仕事
-                </option>
-
-                <option value="home">
-                    家
-                </option>
-
-                <option value="travel">
-                    旅行
-                </option>
-
-                <option value="pet">
-                    ペット
-                </option>
-
+            <select id="eventCategory" disabled>
+                <option value="">カテゴリを読み込み中...</option>
             </select>
 
         </div>
