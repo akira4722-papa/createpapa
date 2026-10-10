@@ -3,7 +3,7 @@
 ========================================================= */
 
 const SUPABASE_URL = "https://pwgmsbzbnihnemveggsl.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_9yxCklCNudnEnIlWoGfRgw_kOLcbDxS";
+const SUPABASE_PUBLISHABLE_KEY = "YOUR_SUPABASE_PUBLISHABLE_KEY";
 
 const supabaseClient =
     window.supabase.createClient(
@@ -12,6 +12,7 @@ const supabaseClient =
     );
 
 let currentUser = null;
+let eventCategories = [];
 
 
 /* =========================================================
@@ -90,6 +91,7 @@ async function initializeSupabaseApp() {
     }
 
     if (document.getElementById("calendarGrid")) {
+        await loadEventCategoriesFromSupabase();
         await loadEventsFromSupabase();
     }
 
@@ -153,6 +155,7 @@ async function loginToSupabase() {
         .classList.remove("show");
 
     if (document.getElementById("calendarGrid")) {
+        await loadEventCategoriesFromSupabase();
         await loadEventsFromSupabase();
     }
 
@@ -181,6 +184,48 @@ function hideLoginError() {
 
     error.textContent = "";
     error.style.display = "none";
+
+}
+
+
+async function loadEventCategoriesFromSupabase() {
+    const select = document.getElementById("eventCategory");
+    if (!select) return;
+
+    select.disabled = true;
+    select.innerHTML = '<option value="">カテゴリを読み込み中...</option>';
+
+    const { data, error } = await supabaseClient
+        .from("event_categories")
+        .select("category_key, category_name, sort_order")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("category_name", { ascending: true });
+
+    if (error) {
+        console.error("カテゴリの取得に失敗しました:", error);
+        select.innerHTML = '<option value="">カテゴリを取得できません</option>';
+        select.disabled = true;
+        return;
+    }
+
+    eventCategories = data || [];
+    select.innerHTML = "";
+
+    if (eventCategories.length === 0) {
+        select.innerHTML = '<option value="">カテゴリが登録されていません</option>';
+        select.disabled = true;
+        return;
+    }
+
+    eventCategories.forEach(category => {
+        const option = document.createElement("option");
+        option.value = category.category_key;
+        option.textContent = category.category_name;
+        select.appendChild(option);
+    });
+
+    select.disabled = false;
 
 }
 
@@ -323,17 +368,8 @@ let selectedDate =
 
 
 /*
-    後でここをSupabaseから取得する。
-
-    形式：
-
-    {
-        id: 1,
-        date: "2026-10-06",
-        time: "08:30",
-        title: "保育園",
-        category: "child"
-    }
+    予定データはSupabaseから取得する。
+    categoryにはevent_categories.category_keyを保持する。
 */
 
 let selectedEventForDetail = null;
@@ -820,22 +856,7 @@ function renderSelectedDay() {
                 `selected-event-category ${event.category}`;
 
 
-            const categoryNames = {
-
-                child: "子ども",
-                family: "家族",
-                work: "仕事",
-                home: "家",
-                travel: "旅行",
-                pet: "ペット"
-
-            };
-
-
-            category.textContent =
-                categoryNames[
-                    event.category
-                ];
+            category.textContent = getEventCategoryName(event.category);
 
 
             row.appendChild(time);
@@ -1035,21 +1056,7 @@ function renderMonthEvents() {
             category.className =
                 `month-event-category ${event.category}`;
 
-            const categoryNames = {
-
-                child: "子ども",
-                family: "家族",
-                work: "仕事",
-                home: "家",
-                travel: "旅行",
-                pet: "ペット"
-
-            };
-
-            category.textContent =
-                categoryNames[
-                    event.category
-                ];
+            category.textContent = getEventCategoryName(event.category);
 
 
             const date =
@@ -1199,14 +1206,17 @@ function changeCalendarView(
    予定詳細・削除
 ========================================================= */
 
-const eventCategoryLabels = {
-    child: "子ども",
-    family: "家族",
-    work: "仕事",
-    home: "家",
-    travel: "旅行",
-    pet: "ペット"
-};
+// カテゴリ名はDBから取得したeventCategoriesを共通参照する。
+// DBに存在しない古いカテゴリ値がある場合はキーを表示し、空欄にはしない。
+function getEventCategoryName(categoryKey) {
+    if (!categoryKey) return "未分類";
+
+    const category = eventCategories.find(
+        item => item.category_key === categoryKey
+    );
+
+    return category?.category_name || categoryKey;
+}
 
 function openEventDetailModal(event) {
     selectedEventForDetail = event;
@@ -1214,7 +1224,7 @@ function openEventDetailModal(event) {
     document.getElementById("detailEventTitle").textContent = event.title || "（予定名なし）";
     document.getElementById("detailEventDate").textContent = event.date || "日付なし";
     document.getElementById("detailEventTime").textContent = event.time || "時刻指定なし";
-    document.getElementById("detailEventCategory").textContent = eventCategoryLabels[event.category] || event.category || "未分類";
+    document.getElementById("detailEventCategory").textContent = getEventCategoryName(event.category);
 
     const deleteButton = document.getElementById("deleteEventButton");
     deleteButton.disabled = false;
@@ -1349,6 +1359,11 @@ async function saveEvent() {
 
         return;
 
+    }
+
+    if (!category) {
+        alert("カテゴリを選択してください。カテゴリ一覧を取得できない場合は、ページを再読み込みしてください。");
+        return;
     }
 
 
