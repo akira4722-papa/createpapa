@@ -1,795 +1,891 @@
 /* =========================================================
-   Supabase設定
+   基本
 ========================================================= */
 
-const SUPABASE_URL = "https://pwgmsbzbnihnemveggsl.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_9yxCklCNudnEnIlWoGfRgw_kOLcbDxS";
-
-const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_PUBLISHABLE_KEY
-    );
-
-let currentUser = null;
-
-
-/* =========================================================
-   日付
-========================================================= */
-
-const today = new Date();
-
-const weekNames = [
-    "日",
-    "月",
-    "火",
-    "水",
-    "木",
-    "金",
-    "土"
-];
-
-document.getElementById("todayDate").textContent =
-    `${today.getFullYear()}年` +
-    `${today.getMonth() + 1}月` +
-    `${today.getDate()}日` +
-    `（${weekNames[today.getDay()]}）`;
-
-
-/* =========================================================
-   Supabase認証・予定取得
-========================================================= */
-
-async function initializeSupabaseApp() {
-
-    if (SUPABASE_URL === "YOUR_SUPABASE_URL" ||
-        SUPABASE_PUBLISHABLE_KEY === "YOUR_SUPABASE_PUBLISHABLE_KEY") {
-
-        showLoginError(
-            "index.htmlのSUPABASE_URLとSUPABASE_PUBLISHABLE_KEYを設定してください。"
-        );
-
-        return;
-    }
-
-    const { data, error } =
-        await supabaseClient.auth.getSession();
-
-    if (error) {
-
-        showLoginError(
-            "Supabaseへの接続に失敗しました。"
-        );
-
-        console.error(error);
-
-        return;
-    }
-
-    currentUser = data.session?.user || null;
-
-    if (currentUser) {
-
-        document
-            .getElementById("authModal")
-            .classList.remove("show");
-
-    }
-
-    if (!currentUser) {
-
-        document
-            .getElementById("authModal")
-            .classList.add("show");
-
-        return;
-    }
-
-    await loadEventsFromSupabase();
-
+* {
+    box-sizing: border-box;
 }
 
-
-async function loginToSupabase() {
-
-    const email =
-        document
-            .getElementById("loginEmail")
-            .value
-            .trim();
-
-    const password =
-        document
-            .getElementById("loginPassword")
-            .value;
-
-    if (!email || !password) {
-
-        showLoginError(
-            "メールアドレスとパスワードを入力してください。"
-        );
-
-        return;
-    }
-
-    const button =
-        document.getElementById("loginButton");
-
-    button.disabled = true;
-    button.textContent = "ログイン中…";
-
-    hideLoginError();
-
-    const { data, error } =
-        await supabaseClient.auth.signInWithPassword({
-            email,
-            password
-        });
-
-    button.disabled = false;
-    button.textContent = "ログイン";
-
-    if (error) {
-
-        showLoginError(
-            "ログインできませんでした。メールアドレスまたはパスワードを確認してください。"
-        );
-
-        console.error(error);
-
-        return;
-    }
-
-    currentUser = data.user;
-
-    document
-        .getElementById("authModal")
-        .classList.remove("show");
-
-    await loadEventsFromSupabase();
-
+html {
+    scroll-behavior: smooth;
 }
 
+body {
+    margin: 0;
+    background: #f5f5f3;
+    color: #333;
 
-function showLoginError(message) {
-
-    const error =
-        document.getElementById("loginError");
-
-    if (!error) return;
-
-    error.textContent = message;
-    error.style.display = "block";
-
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Noto Sans JP",
+        "Yu Gothic",
+        sans-serif;
 }
 
-
-function hideLoginError() {
-
-    const error =
-        document.getElementById("loginError");
-
-    if (!error) return;
-
-    error.textContent = "";
-    error.style.display = "none";
-
+button,
+input,
+select,
+textarea {
+    font: inherit;
 }
 
-
-async function loadEventsFromSupabase() {
-
-    const { data, error } =
-        await supabaseClient
-            .from("family_events")
-            .select("id, event_date, event_time, title, category")
-            .order("event_date", { ascending: true })
-            .order("event_time", { ascending: true });
-
-    if (error) {
-
-        alert(
-            "予定の取得に失敗しました。\n\n" +
-            error.message
-        );
-
-        console.error(error);
-
-        return;
-    }
-
-    events = (data || []).map(event => ({
-        id: event.id,
-        date: event.event_date,
-        time: event.event_time ? event.event_time.slice(0, 5) : "",
-        title: event.title,
-        category: event.category
-    }));
-
-    renderCalendar();
-
+button {
+    cursor: pointer;
 }
 
 
 /* =========================================================
-   ページ切り替え
+   サイドバー
 ========================================================= */
 
-function showPage(pageName) {
+.sidebar {
+    position: fixed;
 
-    const pageMap = {
-        home: "homePage",
-        calendar: "calendarPage"
-    };
+    left: 0;
+    top: 0;
 
-    const targetPageId = pageMap[pageName];
+    width: 230px;
+    height: 100vh;
 
-    if (!targetPageId) {
-        return;
-    }
+    background: #fff;
 
-    document
-        .querySelectorAll(".page")
-        .forEach(page => {
-            page.classList.remove("active");
-        });
+    border-right: 1px solid #e8e8e5;
 
+    padding: 24px 16px;
 
-    const targetPage =
-        document.getElementById(targetPageId);
+    overflow-y: auto;
 
-    if (!targetPage) {
-        return;
-    }
-
-    targetPage.classList.add("active");
-
-
-    document
-        .querySelectorAll(".nav-item")
-        .forEach(item => {
-
-            item.classList.toggle(
-                "active",
-                item.dataset.page === pageName
-            );
-
-        });
-
-
-    document
-        .querySelectorAll(".mobile-nav-item")
-        .forEach(item => {
-
-            item.classList.toggle(
-                "active",
-                item.dataset.page === pageName
-            );
-
-        });
-
-
-    if (pageName === "calendar") {
-
-        renderCalendar();
-
-    }
-
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+    z-index: 100;
 }
 
+.logo {
+    font-size: 20px;
+    font-weight: 700;
 
-/* PCナビ */
-
-document
-    .querySelectorAll(".nav-item[data-page]")
-    .forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                showPage(
-                    button.dataset.page
-                );
-
-            }
-        );
-
-    });
-
-
-/* スマホナビ */
-
-document
-    .querySelectorAll(".mobile-nav-item[data-page]")
-    .forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                showPage(
-                    button.dataset.page
-                );
-
-            }
-        );
-
-    });
-
-
-/* =========================================================
-   Todo
-========================================================= */
-
-document
-    .querySelectorAll(".todo input")
-    .forEach(input => {
-
-        input.addEventListener(
-            "change",
-            () => {
-
-                input.parentElement
-                    .classList.toggle(
-                        "done",
-                        input.checked
-                    );
-
-            }
-        );
-
-    });
-
-
-function addTodo() {
-
-    const text =
-        prompt(
-            "追加するTodoを入力してください"
-        );
-
-    if (!text) return;
-
-    alert(
-        `「${text}」を追加しました。\n\n` +
-        `※現在はサンプル動作です。`
-    );
-
+    margin-bottom: 28px;
 }
 
+.logo small {
+    display: block;
 
-function openRecord() {
+    margin-top: 4px;
 
-    const text =
-        prompt(
-            "今日の記録を入力してください"
-        );
+    font-size: 11px;
+    color: #999;
 
-    if (!text) return;
+    font-weight: 400;
+}
 
-    alert(
-        "記録しました。\n\n" +
-        text +
-        "\n\n" +
-        "※現在はサンプル動作です。"
-    );
+.nav-item {
+    width: 100%;
 
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 11px 13px;
+
+    margin-bottom: 4px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: transparent;
+
+    color: #555;
+
+    text-align: left;
+}
+
+.nav-item:hover {
+    background: #f4f4f2;
+}
+
+.nav-item.active {
+    background: #dff5f5;
+
+    color: #176f73;
+
+    font-weight: 700;
 }
 
 
 /* =========================================================
-   カレンダー データ
+   メイン
 ========================================================= */
 
-let calendarDate =
-    new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        1
-    );
+.main {
+    margin-left: 230px;
 
+    padding: 28px 34px 70px;
 
-let selectedDate =
-    formatDate(today);
-
-
-/*
-    後でここをSupabaseから取得する。
-
-    形式：
-
-    {
-        id: 1,
-        date: "2026-10-06",
-        time: "08:30",
-        title: "保育園",
-        category: "child"
-    }
-*/
-
-let selectedEventForDetail = null;
-
-let events = [];
-
-
-/* =========================================================
-   日付処理
-========================================================= */
-
-function formatDate(date) {
-
-    const y =
-        date.getFullYear();
-
-    const m =
-        String(
-            date.getMonth() + 1
-        ).padStart(2, "0");
-
-    const d =
-        String(
-            date.getDate()
-        ).padStart(2, "0");
-
-    return `${y}-${m}-${d}`;
-}
-
-
-function getDateLabel(dateString) {
-
-    const date =
-        new Date(
-            dateString + "T00:00:00"
-        );
-
-    return (
-        `${date.getMonth() + 1}月` +
-        `${date.getDate()}日` +
-        `（${weekNames[date.getDay()]}）`
-    );
-
+    max-width: 1500px;
 }
 
 
 /* =========================================================
-   カレンダー描画
+   共通ヘッダー
 ========================================================= */
 
-function renderCalendar() {
+.header {
+    display: flex;
 
-    const year =
-        calendarDate.getFullYear();
+    justify-content: space-between;
+    align-items: center;
 
-    const month =
-        calendarDate.getMonth();
+    margin-bottom: 24px;
+}
 
+.date {
+    font-size: 13px;
+    color: #888;
+}
 
-    document
-        .getElementById("currentMonth")
-        .textContent =
-            `${year}年${month + 1}月`;
+.header-title {
+    margin-top: 4px;
 
+    font-size: 26px;
+    font-weight: 700;
+}
 
-    const grid =
-        document.getElementById(
-            "calendarGrid"
-        );
+.weather {
+    display: flex;
+    align-items: center;
 
+    gap: 9px;
 
-    grid.innerHTML = "";
+    padding: 11px 16px;
 
+    background: white;
 
-    const weekdays = [
-        "日",
-        "月",
-        "火",
-        "水",
-        "木",
-        "金",
-        "土"
-    ];
+    border-radius: 14px;
 
+    box-shadow:
+        0 2px 10px rgba(0,0,0,0.03);
+}
 
-    weekdays.forEach(
-        (day, index) => {
+.weather-icon {
+    font-size: 25px;
+}
 
-            const element =
-                document.createElement(
-                    "div"
-                );
+.weather-temp {
+    font-size: 17px;
+    font-weight: 700;
+}
 
-            element.className =
-                "weekday " +
-                (index === 0
-                    ? "sun"
-                    : index === 6
-                    ? "sat"
-                    : "");
 
-            element.textContent =
-                day;
+/* =========================================================
+   画面切り替え
+========================================================= */
 
-            grid.appendChild(
-                element
-            );
+.page {
+    display: none;
+}
 
-        }
-    );
+.page.active {
+    display: block;
+}
 
 
-    const firstDay =
-        new Date(
-            year,
-            month,
-            1
-        ).getDay();
+/* =========================================================
+   ホーム
+========================================================= */
 
+.hero {
+    min-height: 220px;
 
-    const daysInMonth =
-        new Date(
-            year,
-            month + 1,
-            0
-        ).getDate();
+    display: flex;
+    align-items: flex-end;
 
+    padding: 30px;
 
-    const previousMonthDays =
-        new Date(
-            year,
-            month,
-            0
-        ).getDate();
+    margin-bottom: 24px;
 
+    border-radius: 20px;
 
-    const totalCells =
-        Math.ceil(
-            (firstDay + daysInMonth) / 7
-        ) * 7;
+    color: white;
 
+    background:
+        linear-gradient(
+            rgba(0,0,0,0.05),
+            rgba(0,0,0,0.35)
+        ),
+        url("https://images.unsplash.com/photo-1504150558240-0b4fd8946624?auto=format&fit=crop&w=1600&q=80")
+        center / cover;
+}
 
-    for (
-        let i = 0;
-        i < totalCells;
-        i++
-    ) {
+.hero h1 {
+    margin: 0 0 8px;
 
-        let dayNumber;
+    font-size: 30px;
+}
 
-        let cellDate;
+.hero p {
+    margin: 0;
 
-        let otherMonth = false;
+    opacity: 0.9;
+}
 
+.quick-grid {
+    display: grid;
 
-        if (i < firstDay) {
+    grid-template-columns:
+        repeat(4, minmax(0,1fr));
 
-            dayNumber =
-                previousMonthDays -
-                firstDay +
-                i +
-                1;
+    gap: 14px;
 
-            cellDate =
-                new Date(
-                    year,
-                    month - 1,
-                    dayNumber
-                );
+    margin-bottom: 24px;
+}
 
-            otherMonth = true;
+.quick-card {
+    padding: 18px;
 
-        }
+    border: none;
+    border-radius: 16px;
 
-        else if (
-            i >=
-            firstDay + daysInMonth
-        ) {
+    background: white;
 
-            dayNumber =
-                i -
-                firstDay -
-                daysInMonth +
-                1;
+    text-align: left;
 
-            cellDate =
-                new Date(
-                    year,
-                    month + 1,
-                    dayNumber
-                );
+    box-shadow:
+        0 2px 10px rgba(0,0,0,0.03);
+}
 
-            otherMonth = true;
+.quick-icon {
+    font-size: 25px;
 
-        }
+    margin-bottom: 12px;
+}
 
-        else {
+.quick-title {
+    font-weight: 700;
 
-            dayNumber =
-                i -
-                firstDay +
-                1;
+    margin-bottom: 4px;
+}
 
-            cellDate =
-                new Date(
-                    year,
-                    month,
-                    dayNumber
-                );
+.quick-desc {
+    font-size: 12px;
 
-        }
+    color: #999;
+}
 
+.dashboard {
+    display: grid;
 
-        const dateString =
-            formatDate(cellDate);
+    grid-template-columns:
+        1.2fr
+        0.8fr;
 
+    gap: 20px;
+}
 
-        const cell =
-            document.createElement(
-                "div"
-            );
+.card {
+    padding: 22px;
 
+    background: white;
 
-        cell.className =
-            "day-cell";
+    border-radius: 18px;
 
+    box-shadow:
+        0 2px 10px rgba(0,0,0,0.03);
+}
 
-        if (otherMonth) {
+.card-title {
+    display: flex;
 
-            cell.classList.add(
-                "other-month"
-            );
+    justify-content: space-between;
+    align-items: center;
 
-        }
+    margin-bottom: 18px;
 
+    font-size: 17px;
+    font-weight: 700;
+}
 
-        if (
-            dateString ===
-            formatDate(today)
-        ) {
+.card-link {
+    border: none;
 
-            cell.classList.add(
-                "today"
-            );
+    background: none;
 
-        }
+    color: #888;
 
+    font-size: 12px;
+}
 
-        if (
-            dateString ===
-            selectedDate
-        ) {
+.schedule-item {
+    display: flex;
 
-            cell.classList.add(
-                "selected"
-            );
+    gap: 14px;
 
-        }
+    padding: 12px 0;
 
+    border-bottom: 1px solid #eee;
+}
 
-        cell.onclick =
-            () => {
+.schedule-item:last-child {
+    border-bottom: none;
+}
 
-                selectedDate =
-                    dateString;
+.schedule-time {
+    width: 50px;
 
-                renderCalendar();
+    color: #888;
 
-                renderSelectedDay();
+    font-size: 13px;
+}
 
-            };
+.schedule-title {
+    font-weight: 600;
+}
 
+.schedule-note {
+    margin-top: 4px;
 
-        const number =
-            document.createElement(
-                "div"
-            );
+    color: #999;
 
-        number.className =
-            "day-number";
+    font-size: 12px;
+}
 
-        number.textContent =
-            dayNumber;
+.children {
+    display: grid;
 
+    grid-template-columns:
+        repeat(2,1fr);
 
-        cell.appendChild(
-            number
-        );
+    gap: 12px;
+}
 
+.child {
+    padding: 16px;
 
-        const dayEvents =
-            events
-                .filter(
-                    event =>
-                        event.date ===
-                        dateString
-                )
-                .sort(
-                    (a,b) =>
-                        (a.time || "")
-                        .localeCompare(
-                            b.time || ""
-                        )
-                );
+    background: #fafaf8;
 
+    border-radius: 14px;
+}
 
-        dayEvents
-            .slice(0, 3)
-            .forEach(
-                event => {
+.child-name {
+    font-size: 17px;
+    font-weight: 700;
+}
 
-                    const element =
-                        document.createElement(
-                            "div"
-                        );
+.child-age {
+    margin-top: 3px;
 
-                    element.className =
-                        `calendar-event ${event.category}`;
+    color: #999;
 
-                    element.textContent =
-                        event.time
-                            ? `${event.time} ${event.title}`
-                            : event.title;
+    font-size: 12px;
+}
 
+.child-note {
+    margin-top: 12px;
 
-                    element.onclick = (e) => {
-                        e.stopPropagation();
-                        openEventDetailModal(event);
-                    };
+    font-size: 13px;
 
+    line-height: 1.6;
+}
 
-                    cell.appendChild(
-                        element
-                    );
+.record {
+    padding: 13px 0;
 
-                }
-            );
+    border-bottom: 1px solid #eee;
+}
 
+.record:last-child {
+    border-bottom: none;
+}
 
-        if (
-            dayEvents.length > 3
-        ) {
+.record-date {
+    color: #999;
 
-            const more =
-                document.createElement(
-                    "div"
-                );
+    font-size: 11px;
+}
 
-            more.style.fontSize =
-                "10px";
+.record-title {
+    margin-top: 4px;
 
-            more.style.color =
-                "#999";
+    font-weight: 600;
+}
 
-            more.textContent =
-                `＋${dayEvents.length - 3}件`;
+.record-body {
+    margin-top: 4px;
 
+    color: #777;
 
-            cell.appendChild(
-                more
-            );
+    font-size: 13px;
+}
 
-        }
+.todo {
+    display: flex;
 
+    align-items: center;
 
-        grid.appendChild(
-            cell
-        );
+    gap: 10px;
 
-    }
+    min-height: 42px;
+}
 
+.todo input {
+    width: 19px;
+    height: 19px;
+}
 
-    renderSelectedDay();
+.todo.done span {
+    color: #aaa;
 
-    renderUpcoming();
+    text-decoration: line-through;
+}
 
-    renderMonthEvents();
+.add-button {
+    width: 100%;
 
+    margin-top: 12px;
+
+    padding: 12px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 10px;
+
+    background: #fafafa;
+}
+
+
+/* =========================================================
+   カレンダー画面
+========================================================= */
+
+.calendar-page-header {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 20px;
+}
+
+.calendar-page-title {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.calendar-page-subtitle {
+    margin-top: 5px;
+
+    color: #999;
+
+    font-size: 13px;
+}
+
+.primary-button {
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 11px 17px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: #24a5aa;
+
+    color: white;
+
+    font-weight: 700;
+
+    box-shadow:
+        0 3px 8px rgba(36,165,170,0.2);
+}
+
+.primary-button:hover {
+    background: #1e9499;
+}
+
+
+/* =========================================================
+   カレンダー上部操作
+========================================================= */
+
+.calendar-toolbar {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 14px;
+}
+
+.view-switch {
+    display: flex;
+
+    background: white;
+
+    border: 1px solid #e8e8e5;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+.view-switch button {
+    padding: 9px 14px;
+
+    border: none;
+
+    background: white;
+
+    color: #777;
+
+    font-size: 13px;
+}
+
+.view-switch button.active {
+    background: #dff5f5;
+
+    color: #19787c;
+
+    font-weight: 700;
+}
+
+.month-navigation {
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+}
+
+.month-navigation button {
+    width: 38px;
+    height: 38px;
+
+    border: 1px solid #e5e5e2;
+
+    border-radius: 9px;
+
+    background: white;
+
+    color: #555;
+}
+
+.current-month {
+    min-width: 170px;
+
+    padding: 10px;
+
+    border: 1px solid #e5e5e2;
+
+    border-radius: 9px;
+
+    background: white;
+
+    text-align: center;
+
+    font-weight: 700;
+}
+
+.today-button {
+    margin-left: 5px;
+
+    padding: 10px 14px;
+
+    border: 1px solid #e5e5e2;
+
+    border-radius: 9px;
+
+    background: white;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   カレンダー本体
+========================================================= */
+
+.calendar-layout {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        280px;
+
+    gap: 16px;
+}
+
+.calendar-card {
+    overflow: hidden;
+
+    background: white;
+
+    border-radius: 14px;
+
+    border: 1px solid #ecece9;
+
+    box-shadow:
+        0 2px 10px rgba(0,0,0,0.025);
+}
+
+.calendar-scroll {
+    overflow-x: auto;
+}
+
+.calendar-grid {
+    min-width: 700px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(7, minmax(90px,1fr));
+}
+
+.weekday {
+    padding: 11px 8px;
+
+    border-right: 1px solid #eee;
+
+    border-bottom: 1px solid #eee;
+
+    background: #fafaf8;
+
+    text-align: center;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    color: #666;
+}
+
+.weekday.sun {
+    color: #e35c62;
+}
+
+.weekday.sat {
+    color: #2b91b7;
+}
+
+.day-cell {
+    position: relative;
+
+    min-height: 105px;
+
+    padding: 8px;
+
+    border-right: 1px solid #eee;
+
+    border-bottom: 1px solid #eee;
+
+    background: white;
+
+    transition: background 0.15s;
+}
+
+.day-cell:hover {
+    background: #fbfffe;
+}
+
+.day-cell.other-month {
+    background: #fafaf8;
+
+    color: #bbb;
+}
+
+.day-cell.selected {
+    background: #eafafa;
+}
+
+.day-number {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 24px;
+    height: 24px;
+
+    margin-bottom: 4px;
+
+    border-radius: 50%;
+
+    font-size: 12px;
+}
+
+.day-cell.today .day-number {
+    background: #24a5aa;
+
+    color: white;
+
+    font-weight: 700;
+}
+
+.calendar-event {
+    display: block;
+
+    margin: 3px 0;
+
+    padding: 4px 6px;
+
+    border-radius: 5px;
+
+    overflow: hidden;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.calendar-event.child {
+    background: #ffe5ef;
+
+    color: #d9537a;
+}
+
+.calendar-event.family {
+    background: #fff0cf;
+
+    color: #bf7d18;
+}
+
+.calendar-event.work {
+    background: #e4efff;
+
+    color: #3978c9;
+}
+
+.calendar-event.home {
+    background: #ddf5e8;
+
+    color: #278d60;
+}
+
+.calendar-event.travel {
+    background: #e4eaff;
+
+    color: #596ed2;
+}
+
+.calendar-event.pet {
+    background: #eee4ff;
+
+    color: #8556c5;
+}
+
+
+/* =========================================================
+   右側予定
+========================================================= */
+
+.upcoming-card {
+    padding: 20px;
+
+    background: white;
+
+    border-radius: 14px;
+
+    border: 1px solid #ecece9;
+}
+
+.upcoming-title {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 8px;
+
+    font-weight: 700;
+}
+
+.upcoming-link {
+    border: none;
+
+    background: none;
+
+    color: #24a5aa;
+
+    font-size: 11px;
+}
+
+.upcoming-item {
+    display: flex;
+
+    gap: 10px;
+
+    padding: 13px 0;
+
+    border-bottom: 1px solid #eee;
+}
+
+.upcoming-item:last-child {
+    border-bottom: none;
+}
+
+.event-dot {
+    flex: 0 0 auto;
+
+    width: 9px;
+    height: 9px;
+
+    margin-top: 5px;
+
+    border-radius: 50%;
+}
+
+.event-dot.child {
+    background: #ef78a2;
+}
+
+.event-dot.family {
+    background: #efb44c;
+}
+
+.event-dot.work {
+    background: #78a8eb;
+}
+
+.event-dot.home {
+    background: #61c798;
+}
+
+.event-dot.travel {
+    background: #9aabf0;
+}
+
+.event-dot.pet {
+    background: #b78be7;
+}
+
+.upcoming-date {
+    color: #777;
+
+    font-size: 11px;
+}
+
+.upcoming-event-title {
+    margin-top: 4px;
+
+    font-size: 13px;
+
+    font-weight: 600;
 }
 
 
@@ -797,257 +893,64 @@ function renderCalendar() {
    選択日の予定
 ========================================================= */
 
-function renderSelectedDay() {
+.selected-day-card {
+    margin-top: 16px;
 
-    const title =
-        document.getElementById(
-            "selectedDayTitle"
-        );
+    padding: 20px;
 
+    background: white;
 
-    const eventsContainer =
-        document.getElementById(
-            "selectedDayEvents"
-        );
+    border-radius: 14px;
 
-
-    title.textContent =
-        `${getDateLabel(selectedDate)} の予定`;
-
-
-    eventsContainer.innerHTML = "";
-
-
-    const dayEvents =
-        events
-            .filter(
-                event =>
-                    event.date ===
-                    selectedDate
-            )
-            .sort(
-                (a,b) =>
-                    (a.time || "99:99")
-                    .localeCompare(
-                        b.time || "99:99"
-                    )
-            );
-
-
-    if (!dayEvents.length) {
-
-        eventsContainer.innerHTML = `
-
-            <div
-                style="
-                padding:20px 0;
-                color:#999;
-                font-size:13px;
-                ">
-
-                この日の予定はありません。
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    dayEvents.forEach(
-        event => {
-
-            const row =
-                document.createElement(
-                    "div"
-                );
-
-            row.className =
-                "selected-event";
-
-
-            const time =
-                document.createElement(
-                    "div"
-                );
-
-            time.className =
-                "selected-event-time";
-
-            time.textContent =
-                event.time || "終日";
-
-
-            const name =
-                document.createElement(
-                    "div"
-                );
-
-            name.className =
-                "selected-event-name";
-
-            name.textContent =
-                event.title;
-
-
-            const category =
-                document.createElement(
-                    "div"
-                );
-
-            category.className =
-                `selected-event-category ${event.category}`;
-
-
-            const categoryNames = {
-
-                child: "子ども",
-                family: "家族",
-                work: "仕事",
-                home: "家",
-                travel: "旅行",
-                pet: "ペット"
-
-            };
-
-
-            category.textContent =
-                categoryNames[
-                    event.category
-                ];
-
-
-            row.appendChild(time);
-
-            row.appendChild(name);
-
-            row.appendChild(category);
-
-            eventsContainer.appendChild(
-                row
-            );
-
-        }
-    );
-
+    border: 1px solid #ecece9;
 }
 
+.selected-day-title {
+    margin-bottom: 14px;
 
-/* =========================================================
-   今後の予定
-========================================================= */
+    font-size: 17px;
 
-function renderUpcoming() {
+    font-weight: 700;
+}
 
-    const container =
-        document.getElementById(
-            "upcomingEvents"
-        );
+.selected-event {
+    display: flex;
 
+    align-items: center;
 
-    container.innerHTML = "";
+    gap: 14px;
 
+    padding: 13px 4px;
 
-    const upcoming =
-        [...events]
-            .filter(
-                event =>
-                    event.date >=
-                    formatDate(today)
-            )
-            .sort(
-                (a,b) =>
-                    a.date.localeCompare(
-                        b.date
-                    ) ||
-                    (a.time || "")
-                    .localeCompare(
-                        b.time || ""
-                    )
-            )
-            .slice(0, 7);
+    border-bottom: 1px solid #eee;
+}
 
+.selected-event:last-child {
+    border-bottom: none;
+}
 
-    upcoming.forEach(
-        event => {
+.selected-event-time {
+    width: 50px;
 
-            const row =
-                document.createElement(
-                    "div"
-                );
+    color: #777;
 
-            row.className =
-                "upcoming-item";
+    font-size: 12px;
+}
 
+.selected-event-name {
+    flex: 1;
 
-            const dot =
-                document.createElement(
-                    "div"
-                );
+    font-size: 13px;
 
-            dot.className =
-                `event-dot ${event.category}`;
+    font-weight: 600;
+}
 
+.selected-event-category {
+    padding: 4px 8px;
 
-            const content =
-                document.createElement(
-                    "div"
-                );
+    border-radius: 10px;
 
-
-            const date =
-                document.createElement(
-                    "div"
-                );
-
-            date.className =
-                "upcoming-date";
-
-            date.textContent =
-                getDateLabel(
-                    event.date
-                );
-
-
-            const title =
-                document.createElement(
-                    "div"
-                );
-
-            title.className =
-                "upcoming-event-title";
-
-            title.textContent =
-                event.title;
-
-
-            content.appendChild(
-                date
-            );
-
-            content.appendChild(
-                title
-            );
-
-
-            row.appendChild(
-                dot
-            );
-
-            row.appendChild(
-                content
-            );
-
-
-            container.appendChild(
-                row
-            );
-
-        }
-    );
-
+    font-size: 10px;
 }
 
 
@@ -1055,511 +958,508 @@ function renderUpcoming() {
    今月のイベント
 ========================================================= */
 
-function renderMonthEvents() {
+.month-events {
+    display: grid;
 
-    const container =
-        document.getElementById(
-            "monthEvents"
-        );
+    grid-template-columns:
+        repeat(4,1fr);
 
+    gap: 12px;
 
-    container.innerHTML = "";
+    margin-top: 16px;
+}
 
+.month-event-card {
+    padding: 15px;
 
-    const year =
-        calendarDate.getFullYear();
+    border: 1px solid #eee;
 
-    const month =
-        calendarDate.getMonth();
+    border-radius: 12px;
 
+    background: white;
+}
 
-    const prefix =
-        `${year}-${String(
-            month + 1
-        ).padStart(2,"0")}`;
+.month-event-category {
+    display: inline-block;
 
+    padding: 4px 8px;
 
-    const monthEvents =
-        events
-            .filter(
-                event =>
-                    event.date.startsWith(
-                        prefix
-                    )
-            )
-            .sort(
-                (a,b) =>
-                    a.date.localeCompare(
-                        b.date
-                    )
-            )
-            .slice(0,4);
+    margin-bottom: 10px;
 
+    border-radius: 10px;
 
-    monthEvents.forEach(
-        event => {
+    font-size: 10px;
+}
 
-            const card =
-                document.createElement(
-                    "div"
-                );
+.month-event-date {
+    color: #777;
 
-            card.className =
-                "month-event-card";
+    font-size: 11px;
+}
 
+.month-event-name {
+    margin-top: 4px;
 
-            const category =
-                document.createElement(
-                    "div"
-                );
+    font-size: 13px;
 
-            category.className =
-                `month-event-category ${event.category}`;
-
-            const categoryNames = {
-
-                child: "子ども",
-                family: "家族",
-                work: "仕事",
-                home: "家",
-                travel: "旅行",
-                pet: "ペット"
-
-            };
-
-            category.textContent =
-                categoryNames[
-                    event.category
-                ];
-
-
-            const date =
-                document.createElement(
-                    "div"
-                );
-
-            date.className =
-                "month-event-date";
-
-            date.textContent =
-                event.date;
-
-
-            const title =
-                document.createElement(
-                    "div"
-                );
-
-            title.className =
-                "month-event-name";
-
-            title.textContent =
-                event.title;
-
-
-            card.appendChild(
-                category
-            );
-
-            card.appendChild(
-                date
-            );
-
-            card.appendChild(
-                title
-            );
-
-
-            container.appendChild(
-                card
-            );
-
-        }
-    );
-
+    font-weight: 700;
 }
 
 
 /* =========================================================
-   月移動
+   予定追加モーダル
 ========================================================= */
 
-function changeMonth(offset) {
+.modal-overlay {
+    position: fixed;
 
-    calendarDate =
-        new Date(
-            calendarDate.getFullYear(),
-            calendarDate.getMonth() + offset,
-            1
-        );
+    inset: 0;
 
+    display: none;
 
-    renderCalendar();
+    align-items: center;
+    justify-content: center;
 
+    padding: 20px;
+
+    background: rgba(0,0,0,0.35);
+
+    z-index: 500;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal {
+    width: 100%;
+
+    max-width: 450px;
+
+    padding: 24px;
+
+    background: white;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 15px 50px rgba(0,0,0,0.2);
+}
+
+.modal-title {
+    margin-bottom: 20px;
+
+    font-size: 20px;
+
+    font-weight: 700;
 }
 
 
-function goToday() {
+.delete-button {
+    background: #fff0ef;
+    color: #c0392b;
+    border: 1px solid #f2c5c1 !important;
+}
 
-    calendarDate =
-        new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            1
-        );
+.detail-value {
+    padding: 12px 13px;
+    border-radius: 10px;
+    background: #f7f8f6;
+    color: #333;
+    overflow-wrap: anywhere;
+}
 
+.detail-label {
+    margin: 0 0 6px;
+    color: #777;
+    font-size: 12px;
+}
 
-    selectedDate =
-        formatDate(today);
+.form-group {
+    margin-bottom: 15px;
+}
 
+.form-group label {
+    display: block;
 
-    renderCalendar();
+    margin-bottom: 6px;
 
+    font-size: 12px;
+
+    color: #777;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+
+    padding: 11px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 9px;
+
+    background: white;
+}
+
+.modal-buttons {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+.modal-buttons button {
+    flex: 1;
+
+    padding: 11px;
+
+    border-radius: 9px;
+
+    border: none;
+}
+
+.cancel-button {
+    background: #f1f1ef;
+
+    color: #555;
+}
+
+.save-button {
+    background: #24a5aa;
+
+    color: white;
+
+    font-weight: 700;
 }
 
 
 /* =========================================================
-   表示切り替え
+   スマホ下部ナビ
 ========================================================= */
 
-function changeCalendarView(
-    view,
-    button
-) {
-
-    document
-        .querySelectorAll(
-            ".view-switch button"
-        )
-        .forEach(
-            item => {
-
-                item.classList.remove(
-                    "active"
-                );
-
-            }
-        );
-
-
-    button.classList.add(
-        "active"
-    );
-
-
-    if (view === "month") {
-
-        renderCalendar();
-
-        return;
-
-    }
-
-
-    if (view === "day") {
-
-        renderSelectedDay();
-
-        return;
-
-    }
-
-
-    if (view === "week") {
-
-        alert(
-            "週表示は次の実装で追加します。"
-        );
-
-    }
-
+.mobile-nav {
+    display: none;
 }
 
 
 /* =========================================================
-   予定詳細・削除
+   ＋ボタン
 ========================================================= */
 
-const eventCategoryLabels = {
-    child: "子ども",
-    family: "家族",
-    work: "仕事",
-    home: "家",
-    travel: "旅行",
-    pet: "ペット"
-};
+.floating-button {
+    position: fixed;
 
-function openEventDetailModal(event) {
-    selectedEventForDetail = event;
+    right: 22px;
+    bottom: 28px;
 
-    document.getElementById("detailEventTitle").textContent = event.title || "（予定名なし）";
-    document.getElementById("detailEventDate").textContent = event.date || "日付なし";
-    document.getElementById("detailEventTime").textContent = event.time || "時刻指定なし";
-    document.getElementById("detailEventCategory").textContent = eventCategoryLabels[event.category] || event.category || "未分類";
+    width: 58px;
+    height: 58px;
 
-    const deleteButton = document.getElementById("deleteEventButton");
-    deleteButton.disabled = false;
-    deleteButton.textContent = "予定を削除";
+    border: none;
 
-    document.getElementById("eventDetailModal").classList.add("show");
+    border-radius: 50%;
+
+    background: #222;
+
+    color: white;
+
+    font-size: 30px;
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,0.2);
+
+    z-index: 300;
 }
-
-function closeEventDetailModal() {
-    document.getElementById("eventDetailModal").classList.remove("show");
-    selectedEventForDetail = null;
-}
-
-async function deleteSelectedEvent() {
-    const event = selectedEventForDetail;
-
-    if (!event || !event.id) {
-        alert("削除する予定を特定できませんでした。カレンダーを再読み込みしてお試しください。");
-        return;
-    }
-
-    if (!currentUser) {
-        alert("ログイン状態を確認できません。もう一度ログインしてください。");
-        closeEventDetailModal();
-        document.getElementById("authModal").classList.add("show");
-        return;
-    }
-
-    const confirmed = window.confirm(`「${event.title}」を削除しますか？\nこの操作は取り消せません。`);
-    if (!confirmed) return;
-
-    const button = document.getElementById("deleteEventButton");
-    button.disabled = true;
-    button.textContent = "削除中…";
-
-    try {
-        const { data, error } = await supabaseClient
-            .from("family_events")
-            .delete()
-            .eq("id", event.id)
-            .eq("user_id", currentUser.id)
-            .select("id");
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-            throw new Error("予定が削除されませんでした。ログイン状態やデータベースの権限設定を確認してください。");
-        }
-
-        events = events.filter(item => item.id !== event.id);
-        closeEventDetailModal();
-        renderCalendar();
-    } catch (error) {
-        console.error("予定の削除に失敗しました:", error);
-        alert("予定の削除に失敗しました。\n\n" + (error.message || "原因不明のエラー"));
-        button.disabled = false;
-        button.textContent = "予定を削除";
-    }
-}
-
-/* =========================================================
-   予定追加
-========================================================= */
-
-function openEventModal() {
-
-    const modal =
-        document.getElementById(
-            "eventModal"
-        );
-
-
-    document.getElementById(
-        "eventDate"
-    ).value =
-        selectedDate;
-
-
-    document.getElementById(
-        "eventTitle"
-    ).value = "";
-
-
-    modal.classList.add(
-        "show"
-    );
-
-}
-
-
-function closeEventModal() {
-
-    document
-        .getElementById(
-            "eventModal"
-        )
-        .classList.remove(
-            "show"
-        );
-
-}
-
-
-async function saveEvent() {
-
-    const date =
-        document.getElementById(
-            "eventDate"
-        ).value;
-
-    const time =
-        document.getElementById(
-            "eventTime"
-        ).value;
-
-    const title =
-        document.getElementById(
-            "eventTitle"
-        ).value.trim();
-
-    const category =
-        document.getElementById(
-            "eventCategory"
-        ).value;
-
-
-    if (!date || !title) {
-
-        alert(
-            "日付と予定を入力してください。"
-        );
-
-        return;
-
-    }
-
-
-    if (!currentUser) {
-
-        document
-            .getElementById("authModal")
-            .classList.add("show");
-
-        return;
-
-    }
-
-
-    const button =
-        document.querySelector(
-            "#eventModal .save-button"
-        );
-
-    if (button) {
-        button.disabled = true;
-        button.textContent = "保存中…";
-    }
-
-
-    const { data, error } =
-        await supabaseClient
-            .from("family_events")
-            .insert({
-                user_id: currentUser.id,
-                event_date: date,
-                event_time: time || null,
-                title: title,
-                category: category
-            })
-            .select("id, event_date, event_time, title, category")
-            .single();
-
-
-    if (button) {
-        button.disabled = false;
-        button.textContent = "保存";
-    }
-
-
-    if (error) {
-
-        alert(
-            "予定の保存に失敗しました。\n\n" +
-            error.message
-        );
-
-        console.error(error);
-
-        return;
-
-    }
-
-
-    events.push({
-        id: data.id,
-        date: data.event_date,
-        time: data.event_time
-            ? data.event_time.slice(0, 5)
-            : "",
-        title: data.title,
-        category: data.category
-    });
-
-
-    selectedDate = date;
-
-    calendarDate =
-        new Date(
-            date + "T00:00:00"
-        );
-
-    calendarDate =
-        new Date(
-            calendarDate.getFullYear(),
-            calendarDate.getMonth(),
-            1
-        );
-
-
-    closeEventModal();
-
-    renderCalendar();
-
-}
-
-
-document.getElementById("eventDetailModal").addEventListener("click", function(e) {
-    if (e.target === this) closeEventDetailModal();
-});
-
-/* =========================================================
-   モーダル外クリック
-========================================================= */
-
-document
-    .getElementById("eventModal")
-    .addEventListener(
-        "click",
-        function(e) {
-
-            if (
-                e.target === this
-            ) {
-
-                closeEventModal();
-
-            }
-
-        }
-    );
 
 
 /* =========================================================
-   初期化
+   スマホ
 ========================================================= */
 
-initializeSupabaseApp();
+@media (max-width: 760px) {
 
-document
-    .getElementById("loginPassword")
-    .addEventListener("keydown", function(e) {
+    body {
+        padding-bottom:
+            calc(72px + env(safe-area-inset-bottom));
+    }
 
-        if (e.key === "Enter") {
-            loginToSupabase();
-        }
+    .sidebar {
+        display: none;
+    }
 
-    });
+    .main {
+        margin-left: 0;
+
+        padding:
+            17px
+            14px
+            100px;
+    }
+
+    .header {
+        margin-bottom: 18px;
+    }
+
+    .header-title {
+        font-size: 21px;
+    }
+
+    .weather {
+        padding: 8px 11px;
+    }
+
+    .weather-temp {
+        font-size: 14px;
+    }
+
+    .weather-icon {
+        font-size: 20px;
+    }
+
+    /* ホーム */
+
+    .hero {
+        min-height: 175px;
+
+        padding: 21px;
+
+        border-radius: 17px;
+    }
+
+    .hero h1 {
+        font-size: 23px;
+    }
+
+    .hero p {
+        font-size: 12px;
+    }
+
+    .quick-grid {
+        grid-template-columns:
+            repeat(2,1fr);
+
+        gap: 10px;
+    }
+
+    .quick-card {
+        min-height: 105px;
+
+        padding: 14px;
+    }
+
+    .dashboard {
+        grid-template-columns: 1fr;
+
+        gap: 14px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .children {
+        grid-template-columns: 1fr;
+    }
+
+    /* カレンダー */
+
+    .calendar-page-header {
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .calendar-page-header > div {
+        width: 100%;
+    }
+
+    .calendar-page-title {
+        justify-content: center;
+    }
+
+    .calendar-page-title {
+        font-size: 22px;
+    }
+
+    .calendar-page-subtitle {
+        font-size: 11px;
+    }
+
+    .primary-button {
+        padding: 10px 12px;
+
+        white-space: nowrap;
+
+        font-size: 12px;
+    }
+
+    .calendar-toolbar {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .view-switch {
+        order: 1;
+    }
+
+    .month-navigation {
+        width: 100%;
+
+        order: 2;
+
+        justify-content: center;
+    }
+
+    .current-month {
+        min-width: 140px;
+    }
+
+    .calendar-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .calendar-scroll {
+        width: 100%;
+        overflow: hidden;
+
+        border-radius: 14px;
+    }
+
+    .calendar-grid {
+        width: 100%;
+        min-width: 0;
+
+        grid-template-columns:
+            repeat(7, minmax(0, 1fr));
+    }
+
+    .weekday {
+        min-width: 0;
+        padding: 8px 0;
+        font-size: 10px;
+    }
+
+    .day-cell {
+        min-width: 0;
+        min-height: 62px;
+        padding: 4px 3px;
+        overflow: hidden;
+    }
+
+    .day-number {
+        width: 21px;
+        height: 21px;
+        margin-bottom: 2px;
+        font-size: 10px;
+    }
+
+    .calendar-event {
+        width: 100%;
+        margin: 2px 0;
+        padding: 2px 3px;
+        border-radius: 4px;
+        font-size: 8px;
+        line-height: 1.25;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .upcoming-card {
+        display: none;
+    }
+
+    .month-events {
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+    .floating-button {
+        right: 50%;
+
+        transform: translateX(50%);
+
+        bottom:
+            calc(45px + env(safe-area-inset-bottom));
+    }
+
+    /* スマホナビ */
+
+    .mobile-nav {
+        position: fixed;
+
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        display: flex;
+
+        width: 100%;
+        height:
+            calc(64px + env(safe-area-inset-bottom));
+
+        padding: 0 0 env(safe-area-inset-bottom) 0;
+
+        background:
+            rgba(255,255,255,0.97);
+
+        border-top: 1px solid #e9e9e6;
+
+        z-index: 250;
+    }
+
+    .mobile-nav-item {
+        flex: 1 1 0;
+        min-width: 0;
+        height: 64px;
+
+        padding: 9px 0 0;
+
+        border: none;
+
+        background: none;
+
+        color: #999;
+
+        font-size: 10px;
+    }
+
+    .mobile-nav-item span {
+        display: block;
+
+        margin-bottom: 3px;
+
+        font-size: 20px;
+    }
+
+    .mobile-nav-item.active {
+        color: #24a5aa;
+
+        font-weight: 700;
+    }
+}
+
+
+/* =========================================================
+   小さいスマホ
+========================================================= */
+
+@media (max-width: 380px) {
+
+    .main {
+        padding-left: 11px;
+        padding-right: 11px;
+    }
+
+    .month-events {
+        grid-template-columns: 1fr;
+    }
+
+    .calendar-page-title {
+        font-size: 20px;
+    }
+
+}
