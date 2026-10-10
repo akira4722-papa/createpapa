@@ -6,6 +6,45 @@
 <meta name="theme-color" content="#f5f5f3">
 <title>カレンダー | わが家の記録帳</title>
 <link rel="stylesheet" href="css/style.css">
+<style>
+/* 予定追加モーダル：スマホで日付・時刻入力欄が横にはみ出すのを防ぐ */
+#eventModal .modal,
+#eventModal .form-group,
+#eventModal .form-group input,
+#eventModal .form-group select {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+}
+
+#eventModal .form-group input[type="date"],
+#eventModal .form-group input[type="time"] {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    font: inherit;
+}
+
+@media (max-width: 760px) {
+    #eventModal {
+        padding: 14px;
+    }
+
+    #eventModal .modal {
+        width: 100%;
+        max-width: 450px;
+        padding: 20px 16px;
+    }
+
+    #eventModal input[type="date"],
+    #eventModal input[type="time"] {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        padding: 10px 8px;
+    }
+}
+</style>
 </head>
 <body>
 <!-- =======================================================
