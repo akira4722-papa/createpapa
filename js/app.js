@@ -839,10 +839,8 @@ function renderCalendar() {
                     element.className = "calendar-event";
                     applyEventCategoryStyle(element, event.category);
 
-                    element.textContent =
-                        event.time
-                            ? `${event.time} ${event.title}`
-                            : event.title;
+                    // カレンダーの日付枠には時刻ではなく予定タイトルを表示します。
+                    element.textContent = event.title || "（予定名なし）";
 
 
                     element.onclick = (e) => {
