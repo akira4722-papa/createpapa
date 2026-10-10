@@ -1,891 +1,714 @@
 /* =========================================================
-   基本
+   Supabase設定
 ========================================================= */
 
-* {
-    box-sizing: border-box;
-}
+const SUPABASE_URL = "https://pwgmsbzbnihnemveggsl.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "YOUR_SUPABASE_PUBLISHABLE_KEY";
 
-html {
-    scroll-behavior: smooth;
-}
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+    );
 
-body {
-    margin: 0;
-    background: #f5f5f3;
-    color: #333;
+let currentUser = null;
 
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Noto Sans JP",
-        "Yu Gothic",
-        sans-serif;
-}
 
-button,
-input,
-select,
-textarea {
-    font: inherit;
-}
+/* =========================================================
+   日付
+========================================================= */
 
-button {
-    cursor: pointer;
+const today = new Date();
+
+const weekNames = [
+    "日",
+    "月",
+    "火",
+    "水",
+    "木",
+    "金",
+    "土"
+];
+
+const todayDateElement = document.getElementById("todayDate");
+if (todayDateElement) {
+    todayDateElement.textContent =
+        `${today.getFullYear()}年` +
+        `${today.getMonth() + 1}月` +
+        `${today.getDate()}日` +
+        `（${weekNames[today.getDay()]}）`;
 }
 
 
 /* =========================================================
-   サイドバー
+   Supabase認証・予定取得
 ========================================================= */
 
-.sidebar {
-    position: fixed;
+async function initializeSupabaseApp() {
 
-    left: 0;
-    top: 0;
+    if (SUPABASE_URL === "YOUR_SUPABASE_URL" ||
+        SUPABASE_PUBLISHABLE_KEY === "YOUR_SUPABASE_PUBLISHABLE_KEY") {
 
-    width: 230px;
-    height: 100vh;
+        showLoginError(
+            "js/app.jsのSUPABASE_URLとSUPABASE_PUBLISHABLE_KEYを設定してください。"
+        );
 
-    background: #fff;
+        return;
+    }
 
-    border-right: 1px solid #e8e8e5;
+    const { data, error } =
+        await supabaseClient.auth.getSession();
 
-    padding: 24px 16px;
+    if (error) {
 
-    overflow-y: auto;
+        showLoginError(
+            "Supabaseへの接続に失敗しました。"
+        );
 
-    z-index: 100;
+        console.error(error);
+
+        return;
+    }
+
+    currentUser = data.session?.user || null;
+
+    if (currentUser) {
+
+        document
+            .getElementById("authModal")
+            .classList.remove("show");
+
+    }
+
+    if (!currentUser) {
+
+        document
+            .getElementById("authModal")
+            .classList.add("show");
+
+        return;
+    }
+
+    if (document.getElementById("calendarGrid")) {
+        await loadEventsFromSupabase();
+    }
+
 }
 
-.logo {
-    font-size: 20px;
-    font-weight: 700;
 
-    margin-bottom: 28px;
+async function loginToSupabase() {
+
+    const email =
+        document
+            .getElementById("loginEmail")
+            .value
+            .trim();
+
+    const password =
+        document
+            .getElementById("loginPassword")
+            .value;
+
+    if (!email || !password) {
+
+        showLoginError(
+            "メールアドレスとパスワードを入力してください。"
+        );
+
+        return;
+    }
+
+    const button =
+        document.getElementById("loginButton");
+
+    button.disabled = true;
+    button.textContent = "ログイン中…";
+
+    hideLoginError();
+
+    const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+
+    button.disabled = false;
+    button.textContent = "ログイン";
+
+    if (error) {
+
+        showLoginError(
+            "ログインできませんでした。メールアドレスまたはパスワードを確認してください。"
+        );
+
+        console.error(error);
+
+        return;
+    }
+
+    currentUser = data.user;
+
+    document
+        .getElementById("authModal")
+        .classList.remove("show");
+
+    if (document.getElementById("calendarGrid")) {
+        await loadEventsFromSupabase();
+    }
+
 }
 
-.logo small {
-    display: block;
 
-    margin-top: 4px;
+function showLoginError(message) {
 
-    font-size: 11px;
-    color: #999;
+    const error =
+        document.getElementById("loginError");
 
-    font-weight: 400;
+    if (!error) return;
+
+    error.textContent = message;
+    error.style.display = "block";
+
 }
 
-.nav-item {
-    width: 100%;
 
-    display: flex;
-    align-items: center;
+function hideLoginError() {
 
-    gap: 11px;
+    const error =
+        document.getElementById("loginError");
 
-    padding: 11px 13px;
+    if (!error) return;
 
-    margin-bottom: 4px;
+    error.textContent = "";
+    error.style.display = "none";
 
-    border: none;
-    border-radius: 10px;
-
-    background: transparent;
-
-    color: #555;
-
-    text-align: left;
 }
 
-.nav-item:hover {
-    background: #f4f4f2;
-}
 
-.nav-item.active {
-    background: #dff5f5;
+async function loadEventsFromSupabase() {
 
-    color: #176f73;
+    const { data, error } =
+        await supabaseClient
+            .from("family_events")
+            .select("id, event_date, event_time, title, category")
+            .order("event_date", { ascending: true })
+            .order("event_time", { ascending: true });
 
-    font-weight: 700;
+    if (error) {
+
+        alert(
+            "予定の取得に失敗しました。\n\n" +
+            error.message
+        );
+
+        console.error(error);
+
+        return;
+    }
+
+    events = (data || []).map(event => ({
+        id: event.id,
+        date: event.event_date,
+        time: event.event_time ? event.event_time.slice(0, 5) : "",
+        title: event.title,
+        category: event.category
+    }));
+
+    renderCalendar();
+
 }
 
 
 /* =========================================================
-   メイン
+   ページ間ナビゲーション
 ========================================================= */
 
-.main {
-    margin-left: 230px;
+function showPage(pageName) {
+    const pageFiles = {
+        home: "home.html",
+        calendar: "calendar.html"
+    };
+    const targetFile = pageFiles[pageName];
+    if (!targetFile) return;
 
-    padding: 28px 34px 70px;
+    const currentFile = window.location.pathname.split("/").pop() || "index.html";
+    if (currentFile !== targetFile) {
+        window.location.href = targetFile;
+        return;
+    }
 
-    max-width: 1500px;
+    if (pageName === "calendar") renderCalendar();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* PC・スマホ共通ナビ */
+document.querySelectorAll(".nav-item[data-page], .mobile-nav-item[data-page]").forEach(button => {
+    button.addEventListener("click", () => showPage(button.dataset.page));
+});
+
+/* =========================================================
+   Todo
+========================================================= */
+
+document
+    .querySelectorAll(".todo input")
+    .forEach(input => {
+
+        input.addEventListener(
+            "change",
+            () => {
+
+                input.parentElement
+                    .classList.toggle(
+                        "done",
+                        input.checked
+                    );
+
+            }
+        );
+
+    });
+
+
+function addTodo() {
+
+    const text =
+        prompt(
+            "追加するTodoを入力してください"
+        );
+
+    if (!text) return;
+
+    alert(
+        `「${text}」を追加しました。\n\n` +
+        `※現在はサンプル動作です。`
+    );
+
+}
+
+
+function openRecord() {
+
+    const text =
+        prompt(
+            "今日の記録を入力してください"
+        );
+
+    if (!text) return;
+
+    alert(
+        "記録しました。\n\n" +
+        text +
+        "\n\n" +
+        "※現在はサンプル動作です。"
+    );
+
 }
 
 
 /* =========================================================
-   共通ヘッダー
+   カレンダー データ
 ========================================================= */
 
-.header {
-    display: flex;
+let calendarDate =
+    new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        1
+    );
 
-    justify-content: space-between;
-    align-items: center;
 
-    margin-bottom: 24px;
+let selectedDate =
+    formatDate(today);
+
+
+/*
+    後でここをSupabaseから取得する。
+
+    形式：
+
+    {
+        id: 1,
+        date: "2026-10-06",
+        time: "08:30",
+        title: "保育園",
+        category: "child"
+    }
+*/
+
+let selectedEventForDetail = null;
+
+let events = [];
+
+
+/* =========================================================
+   日付処理
+========================================================= */
+
+function formatDate(date) {
+
+    const y =
+        date.getFullYear();
+
+    const m =
+        String(
+            date.getMonth() + 1
+        ).padStart(2, "0");
+
+    const d =
+        String(
+            date.getDate()
+        ).padStart(2, "0");
+
+    return `${y}-${m}-${d}`;
 }
 
-.date {
-    font-size: 13px;
-    color: #888;
-}
 
-.header-title {
-    margin-top: 4px;
+function getDateLabel(dateString) {
 
-    font-size: 26px;
-    font-weight: 700;
-}
+    const date =
+        new Date(
+            dateString + "T00:00:00"
+        );
 
-.weather {
-    display: flex;
-    align-items: center;
+    return (
+        `${date.getMonth() + 1}月` +
+        `${date.getDate()}日` +
+        `（${weekNames[date.getDay()]}）`
+    );
 
-    gap: 9px;
-
-    padding: 11px 16px;
-
-    background: white;
-
-    border-radius: 14px;
-
-    box-shadow:
-        0 2px 10px rgba(0,0,0,0.03);
-}
-
-.weather-icon {
-    font-size: 25px;
-}
-
-.weather-temp {
-    font-size: 17px;
-    font-weight: 700;
 }
 
 
 /* =========================================================
-   画面切り替え
+   カレンダー描画
 ========================================================= */
 
-.page {
-    display: none;
-}
+function renderCalendar() {
 
-.page.active {
-    display: block;
-}
+    const grid = document.getElementById("calendarGrid");
+    if (!grid) return;
 
+    const year =
+        calendarDate.getFullYear();
 
-/* =========================================================
-   ホーム
-========================================================= */
+    const month =
+        calendarDate.getMonth();
 
-.hero {
-    min-height: 220px;
 
-    display: flex;
-    align-items: flex-end;
+    document
+        .getElementById("currentMonth")
+        .textContent =
+            `${year}年${month + 1}月`;
 
-    padding: 30px;
 
-    margin-bottom: 24px;
+    grid.innerHTML = "";
 
-    border-radius: 20px;
 
-    color: white;
+    const weekdays = [
+        "日",
+        "月",
+        "火",
+        "水",
+        "木",
+        "金",
+        "土"
+    ];
 
-    background:
-        linear-gradient(
-            rgba(0,0,0,0.05),
-            rgba(0,0,0,0.35)
-        ),
-        url("https://images.unsplash.com/photo-1504150558240-0b4fd8946624?auto=format&fit=crop&w=1600&q=80")
-        center / cover;
-}
 
-.hero h1 {
-    margin: 0 0 8px;
+    weekdays.forEach(
+        (day, index) => {
 
-    font-size: 30px;
-}
+            const element =
+                document.createElement(
+                    "div"
+                );
 
-.hero p {
-    margin: 0;
+            element.className =
+                "weekday " +
+                (index === 0
+                    ? "sun"
+                    : index === 6
+                    ? "sat"
+                    : "");
 
-    opacity: 0.9;
-}
+            element.textContent =
+                day;
 
-.quick-grid {
-    display: grid;
+            grid.appendChild(
+                element
+            );
 
-    grid-template-columns:
-        repeat(4, minmax(0,1fr));
+        }
+    );
 
-    gap: 14px;
 
-    margin-bottom: 24px;
-}
+    const firstDay =
+        new Date(
+            year,
+            month,
+            1
+        ).getDay();
 
-.quick-card {
-    padding: 18px;
 
-    border: none;
-    border-radius: 16px;
+    const daysInMonth =
+        new Date(
+            year,
+            month + 1,
+            0
+        ).getDate();
 
-    background: white;
 
-    text-align: left;
+    const previousMonthDays =
+        new Date(
+            year,
+            month,
+            0
+        ).getDate();
 
-    box-shadow:
-        0 2px 10px rgba(0,0,0,0.03);
-}
 
-.quick-icon {
-    font-size: 25px;
+    const totalCells =
+        Math.ceil(
+            (firstDay + daysInMonth) / 7
+        ) * 7;
 
-    margin-bottom: 12px;
-}
 
-.quick-title {
-    font-weight: 700;
+    for (
+        let i = 0;
+        i < totalCells;
+        i++
+    ) {
 
-    margin-bottom: 4px;
-}
+        let dayNumber;
 
-.quick-desc {
-    font-size: 12px;
+        let cellDate;
 
-    color: #999;
-}
+        let otherMonth = false;
 
-.dashboard {
-    display: grid;
 
-    grid-template-columns:
-        1.2fr
-        0.8fr;
+        if (i < firstDay) {
 
-    gap: 20px;
-}
+            dayNumber =
+                previousMonthDays -
+                firstDay +
+                i +
+                1;
 
-.card {
-    padding: 22px;
+            cellDate =
+                new Date(
+                    year,
+                    month - 1,
+                    dayNumber
+                );
 
-    background: white;
+            otherMonth = true;
 
-    border-radius: 18px;
+        }
 
-    box-shadow:
-        0 2px 10px rgba(0,0,0,0.03);
-}
+        else if (
+            i >=
+            firstDay + daysInMonth
+        ) {
 
-.card-title {
-    display: flex;
+            dayNumber =
+                i -
+                firstDay -
+                daysInMonth +
+                1;
 
-    justify-content: space-between;
-    align-items: center;
+            cellDate =
+                new Date(
+                    year,
+                    month + 1,
+                    dayNumber
+                );
 
-    margin-bottom: 18px;
+            otherMonth = true;
 
-    font-size: 17px;
-    font-weight: 700;
-}
+        }
 
-.card-link {
-    border: none;
+        else {
 
-    background: none;
+            dayNumber =
+                i -
+                firstDay +
+                1;
 
-    color: #888;
+            cellDate =
+                new Date(
+                    year,
+                    month,
+                    dayNumber
+                );
 
-    font-size: 12px;
-}
+        }
 
-.schedule-item {
-    display: flex;
 
-    gap: 14px;
+        const dateString =
+            formatDate(cellDate);
 
-    padding: 12px 0;
 
-    border-bottom: 1px solid #eee;
-}
+        const cell =
+            document.createElement(
+                "div"
+            );
 
-.schedule-item:last-child {
-    border-bottom: none;
-}
 
-.schedule-time {
-    width: 50px;
+        cell.className =
+            "day-cell";
 
-    color: #888;
 
-    font-size: 13px;
-}
+        if (otherMonth) {
 
-.schedule-title {
-    font-weight: 600;
-}
+            cell.classList.add(
+                "other-month"
+            );
 
-.schedule-note {
-    margin-top: 4px;
+        }
 
-    color: #999;
 
-    font-size: 12px;
-}
+        if (
+            dateString ===
+            formatDate(today)
+        ) {
 
-.children {
-    display: grid;
+            cell.classList.add(
+                "today"
+            );
 
-    grid-template-columns:
-        repeat(2,1fr);
+        }
 
-    gap: 12px;
-}
 
-.child {
-    padding: 16px;
+        if (
+            dateString ===
+            selectedDate
+        ) {
 
-    background: #fafaf8;
+            cell.classList.add(
+                "selected"
+            );
 
-    border-radius: 14px;
-}
+        }
 
-.child-name {
-    font-size: 17px;
-    font-weight: 700;
-}
 
-.child-age {
-    margin-top: 3px;
+        cell.onclick =
+            () => {
 
-    color: #999;
+                selectedDate =
+                    dateString;
 
-    font-size: 12px;
-}
+                renderCalendar();
 
-.child-note {
-    margin-top: 12px;
+                renderSelectedDay();
 
-    font-size: 13px;
+            };
 
-    line-height: 1.6;
-}
 
-.record {
-    padding: 13px 0;
+        const number =
+            document.createElement(
+                "div"
+            );
 
-    border-bottom: 1px solid #eee;
-}
+        number.className =
+            "day-number";
 
-.record:last-child {
-    border-bottom: none;
-}
+        number.textContent =
+            dayNumber;
 
-.record-date {
-    color: #999;
 
-    font-size: 11px;
-}
+        cell.appendChild(
+            number
+        );
 
-.record-title {
-    margin-top: 4px;
 
-    font-weight: 600;
-}
+        const dayEvents =
+            events
+                .filter(
+                    event =>
+                        event.date ===
+                        dateString
+                )
+                .sort(
+                    (a,b) =>
+                        (a.time || "")
+                        .localeCompare(
+                            b.time || ""
+                        )
+                );
 
-.record-body {
-    margin-top: 4px;
 
-    color: #777;
+        dayEvents
+            .slice(0, 3)
+            .forEach(
+                event => {
 
-    font-size: 13px;
-}
+                    const element =
+                        document.createElement(
+                            "div"
+                        );
 
-.todo {
-    display: flex;
+                    element.className =
+                        `calendar-event ${event.category}`;
 
-    align-items: center;
+                    element.textContent =
+                        event.time
+                            ? `${event.time} ${event.title}`
+                            : event.title;
 
-    gap: 10px;
 
-    min-height: 42px;
-}
+                    element.onclick = (e) => {
+                        e.stopPropagation();
+                        openEventDetailModal(event);
+                    };
 
-.todo input {
-    width: 19px;
-    height: 19px;
-}
 
-.todo.done span {
-    color: #aaa;
+                    cell.appendChild(
+                        element
+                    );
 
-    text-decoration: line-through;
-}
+                }
+            );
 
-.add-button {
-    width: 100%;
 
-    margin-top: 12px;
+        if (
+            dayEvents.length > 3
+        ) {
 
-    padding: 12px;
+            const more =
+                document.createElement(
+                    "div"
+                );
 
-    border: 1px solid #ddd;
+            more.style.fontSize =
+                "10px";
 
-    border-radius: 10px;
+            more.style.color =
+                "#999";
 
-    background: #fafafa;
-}
+            more.textContent =
+                `＋${dayEvents.length - 3}件`;
 
 
-/* =========================================================
-   カレンダー画面
-========================================================= */
+            cell.appendChild(
+                more
+            );
 
-.calendar-page-header {
-    display: flex;
+        }
 
-    justify-content: space-between;
-    align-items: center;
 
-    margin-bottom: 20px;
-}
+        grid.appendChild(
+            cell
+        );
 
-.calendar-page-title {
-    display: flex;
+    }
 
-    align-items: center;
 
-    gap: 10px;
+    renderSelectedDay();
 
-    font-size: 26px;
-    font-weight: 700;
-}
+    renderUpcoming();
 
-.calendar-page-subtitle {
-    margin-top: 5px;
+    renderMonthEvents();
 
-    color: #999;
-
-    font-size: 13px;
-}
-
-.primary-button {
-    display: flex;
-
-    align-items: center;
-
-    gap: 6px;
-
-    padding: 11px 17px;
-
-    border: none;
-
-    border-radius: 10px;
-
-    background: #24a5aa;
-
-    color: white;
-
-    font-weight: 700;
-
-    box-shadow:
-        0 3px 8px rgba(36,165,170,0.2);
-}
-
-.primary-button:hover {
-    background: #1e9499;
-}
-
-
-/* =========================================================
-   カレンダー上部操作
-========================================================= */
-
-.calendar-toolbar {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    margin-bottom: 14px;
-}
-
-.view-switch {
-    display: flex;
-
-    background: white;
-
-    border: 1px solid #e8e8e5;
-
-    border-radius: 10px;
-
-    overflow: hidden;
-}
-
-.view-switch button {
-    padding: 9px 14px;
-
-    border: none;
-
-    background: white;
-
-    color: #777;
-
-    font-size: 13px;
-}
-
-.view-switch button.active {
-    background: #dff5f5;
-
-    color: #19787c;
-
-    font-weight: 700;
-}
-
-.month-navigation {
-    display: flex;
-
-    align-items: center;
-
-    gap: 6px;
-}
-
-.month-navigation button {
-    width: 38px;
-    height: 38px;
-
-    border: 1px solid #e5e5e2;
-
-    border-radius: 9px;
-
-    background: white;
-
-    color: #555;
-}
-
-.current-month {
-    min-width: 170px;
-
-    padding: 10px;
-
-    border: 1px solid #e5e5e2;
-
-    border-radius: 9px;
-
-    background: white;
-
-    text-align: center;
-
-    font-weight: 700;
-}
-
-.today-button {
-    margin-left: 5px;
-
-    padding: 10px 14px;
-
-    border: 1px solid #e5e5e2;
-
-    border-radius: 9px;
-
-    background: white;
-
-    font-size: 12px;
-}
-
-
-/* =========================================================
-   カレンダー本体
-========================================================= */
-
-.calendar-layout {
-    display: grid;
-
-    grid-template-columns:
-        minmax(0, 1fr)
-        280px;
-
-    gap: 16px;
-}
-
-.calendar-card {
-    overflow: hidden;
-
-    background: white;
-
-    border-radius: 14px;
-
-    border: 1px solid #ecece9;
-
-    box-shadow:
-        0 2px 10px rgba(0,0,0,0.025);
-}
-
-.calendar-scroll {
-    overflow-x: auto;
-}
-
-.calendar-grid {
-    min-width: 700px;
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(7, minmax(90px,1fr));
-}
-
-.weekday {
-    padding: 11px 8px;
-
-    border-right: 1px solid #eee;
-
-    border-bottom: 1px solid #eee;
-
-    background: #fafaf8;
-
-    text-align: center;
-
-    font-size: 12px;
-
-    font-weight: 700;
-
-    color: #666;
-}
-
-.weekday.sun {
-    color: #e35c62;
-}
-
-.weekday.sat {
-    color: #2b91b7;
-}
-
-.day-cell {
-    position: relative;
-
-    min-height: 105px;
-
-    padding: 8px;
-
-    border-right: 1px solid #eee;
-
-    border-bottom: 1px solid #eee;
-
-    background: white;
-
-    transition: background 0.15s;
-}
-
-.day-cell:hover {
-    background: #fbfffe;
-}
-
-.day-cell.other-month {
-    background: #fafaf8;
-
-    color: #bbb;
-}
-
-.day-cell.selected {
-    background: #eafafa;
-}
-
-.day-number {
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    width: 24px;
-    height: 24px;
-
-    margin-bottom: 4px;
-
-    border-radius: 50%;
-
-    font-size: 12px;
-}
-
-.day-cell.today .day-number {
-    background: #24a5aa;
-
-    color: white;
-
-    font-weight: 700;
-}
-
-.calendar-event {
-    display: block;
-
-    margin: 3px 0;
-
-    padding: 4px 6px;
-
-    border-radius: 5px;
-
-    overflow: hidden;
-
-    white-space: nowrap;
-
-    text-overflow: ellipsis;
-
-    font-size: 10px;
-
-    font-weight: 600;
-
-    cursor: pointer;
-}
-
-.calendar-event.child {
-    background: #ffe5ef;
-
-    color: #d9537a;
-}
-
-.calendar-event.family {
-    background: #fff0cf;
-
-    color: #bf7d18;
-}
-
-.calendar-event.work {
-    background: #e4efff;
-
-    color: #3978c9;
-}
-
-.calendar-event.home {
-    background: #ddf5e8;
-
-    color: #278d60;
-}
-
-.calendar-event.travel {
-    background: #e4eaff;
-
-    color: #596ed2;
-}
-
-.calendar-event.pet {
-    background: #eee4ff;
-
-    color: #8556c5;
-}
-
-
-/* =========================================================
-   右側予定
-========================================================= */
-
-.upcoming-card {
-    padding: 20px;
-
-    background: white;
-
-    border-radius: 14px;
-
-    border: 1px solid #ecece9;
-}
-
-.upcoming-title {
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    margin-bottom: 8px;
-
-    font-weight: 700;
-}
-
-.upcoming-link {
-    border: none;
-
-    background: none;
-
-    color: #24a5aa;
-
-    font-size: 11px;
-}
-
-.upcoming-item {
-    display: flex;
-
-    gap: 10px;
-
-    padding: 13px 0;
-
-    border-bottom: 1px solid #eee;
-}
-
-.upcoming-item:last-child {
-    border-bottom: none;
-}
-
-.event-dot {
-    flex: 0 0 auto;
-
-    width: 9px;
-    height: 9px;
-
-    margin-top: 5px;
-
-    border-radius: 50%;
-}
-
-.event-dot.child {
-    background: #ef78a2;
-}
-
-.event-dot.family {
-    background: #efb44c;
-}
-
-.event-dot.work {
-    background: #78a8eb;
-}
-
-.event-dot.home {
-    background: #61c798;
-}
-
-.event-dot.travel {
-    background: #9aabf0;
-}
-
-.event-dot.pet {
-    background: #b78be7;
-}
-
-.upcoming-date {
-    color: #777;
-
-    font-size: 11px;
-}
-
-.upcoming-event-title {
-    margin-top: 4px;
-
-    font-size: 13px;
-
-    font-weight: 600;
 }
 
 
@@ -893,64 +716,257 @@ button {
    選択日の予定
 ========================================================= */
 
-.selected-day-card {
-    margin-top: 16px;
+function renderSelectedDay() {
 
-    padding: 20px;
+    const title =
+        document.getElementById(
+            "selectedDayTitle"
+        );
 
-    background: white;
 
-    border-radius: 14px;
+    const eventsContainer =
+        document.getElementById(
+            "selectedDayEvents"
+        );
 
-    border: 1px solid #ecece9;
+
+    title.textContent =
+        `${getDateLabel(selectedDate)} の予定`;
+
+
+    eventsContainer.innerHTML = "";
+
+
+    const dayEvents =
+        events
+            .filter(
+                event =>
+                    event.date ===
+                    selectedDate
+            )
+            .sort(
+                (a,b) =>
+                    (a.time || "99:99")
+                    .localeCompare(
+                        b.time || "99:99"
+                    )
+            );
+
+
+    if (!dayEvents.length) {
+
+        eventsContainer.innerHTML = `
+
+            <div
+                style="
+                padding:20px 0;
+                color:#999;
+                font-size:13px;
+                ">
+
+                この日の予定はありません。
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    dayEvents.forEach(
+        event => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+            row.className =
+                "selected-event";
+
+
+            const time =
+                document.createElement(
+                    "div"
+                );
+
+            time.className =
+                "selected-event-time";
+
+            time.textContent =
+                event.time || "終日";
+
+
+            const name =
+                document.createElement(
+                    "div"
+                );
+
+            name.className =
+                "selected-event-name";
+
+            name.textContent =
+                event.title;
+
+
+            const category =
+                document.createElement(
+                    "div"
+                );
+
+            category.className =
+                `selected-event-category ${event.category}`;
+
+
+            const categoryNames = {
+
+                child: "子ども",
+                family: "家族",
+                work: "仕事",
+                home: "家",
+                travel: "旅行",
+                pet: "ペット"
+
+            };
+
+
+            category.textContent =
+                categoryNames[
+                    event.category
+                ];
+
+
+            row.appendChild(time);
+
+            row.appendChild(name);
+
+            row.appendChild(category);
+
+            eventsContainer.appendChild(
+                row
+            );
+
+        }
+    );
+
 }
 
-.selected-day-title {
-    margin-bottom: 14px;
 
-    font-size: 17px;
+/* =========================================================
+   今後の予定
+========================================================= */
 
-    font-weight: 700;
-}
+function renderUpcoming() {
 
-.selected-event {
-    display: flex;
+    const container =
+        document.getElementById(
+            "upcomingEvents"
+        );
 
-    align-items: center;
 
-    gap: 14px;
+    container.innerHTML = "";
 
-    padding: 13px 4px;
 
-    border-bottom: 1px solid #eee;
-}
+    const upcoming =
+        [...events]
+            .filter(
+                event =>
+                    event.date >=
+                    formatDate(today)
+            )
+            .sort(
+                (a,b) =>
+                    a.date.localeCompare(
+                        b.date
+                    ) ||
+                    (a.time || "")
+                    .localeCompare(
+                        b.time || ""
+                    )
+            )
+            .slice(0, 7);
 
-.selected-event:last-child {
-    border-bottom: none;
-}
 
-.selected-event-time {
-    width: 50px;
+    upcoming.forEach(
+        event => {
 
-    color: #777;
+            const row =
+                document.createElement(
+                    "div"
+                );
 
-    font-size: 12px;
-}
+            row.className =
+                "upcoming-item";
 
-.selected-event-name {
-    flex: 1;
 
-    font-size: 13px;
+            const dot =
+                document.createElement(
+                    "div"
+                );
 
-    font-weight: 600;
-}
+            dot.className =
+                `event-dot ${event.category}`;
 
-.selected-event-category {
-    padding: 4px 8px;
 
-    border-radius: 10px;
+            const content =
+                document.createElement(
+                    "div"
+                );
 
-    font-size: 10px;
+
+            const date =
+                document.createElement(
+                    "div"
+                );
+
+            date.className =
+                "upcoming-date";
+
+            date.textContent =
+                getDateLabel(
+                    event.date
+                );
+
+
+            const title =
+                document.createElement(
+                    "div"
+                );
+
+            title.className =
+                "upcoming-event-title";
+
+            title.textContent =
+                event.title;
+
+
+            content.appendChild(
+                date
+            );
+
+            content.appendChild(
+                title
+            );
+
+
+            row.appendChild(
+                dot
+            );
+
+            row.appendChild(
+                content
+            );
+
+
+            container.appendChild(
+                row
+            );
+
+        }
+    );
+
 }
 
 
@@ -958,508 +974,501 @@ button {
    今月のイベント
 ========================================================= */
 
-.month-events {
-    display: grid;
+function renderMonthEvents() {
 
-    grid-template-columns:
-        repeat(4,1fr);
-
-    gap: 12px;
-
-    margin-top: 16px;
-}
-
-.month-event-card {
-    padding: 15px;
-
-    border: 1px solid #eee;
-
-    border-radius: 12px;
-
-    background: white;
-}
-
-.month-event-category {
-    display: inline-block;
-
-    padding: 4px 8px;
-
-    margin-bottom: 10px;
-
-    border-radius: 10px;
-
-    font-size: 10px;
-}
-
-.month-event-date {
-    color: #777;
-
-    font-size: 11px;
-}
-
-.month-event-name {
-    margin-top: 4px;
-
-    font-size: 13px;
-
-    font-weight: 700;
-}
+    const container =
+        document.getElementById(
+            "monthEvents"
+        );
 
 
-/* =========================================================
-   予定追加モーダル
-========================================================= */
-
-.modal-overlay {
-    position: fixed;
-
-    inset: 0;
-
-    display: none;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 20px;
-
-    background: rgba(0,0,0,0.35);
-
-    z-index: 500;
-}
-
-.modal-overlay.show {
-    display: flex;
-}
-
-.modal {
-    width: 100%;
-
-    max-width: 450px;
-
-    padding: 24px;
-
-    background: white;
-
-    border-radius: 18px;
-
-    box-shadow:
-        0 15px 50px rgba(0,0,0,0.2);
-}
-
-.modal-title {
-    margin-bottom: 20px;
-
-    font-size: 20px;
-
-    font-weight: 700;
-}
+    container.innerHTML = "";
 
 
-.delete-button {
-    background: #fff0ef;
-    color: #c0392b;
-    border: 1px solid #f2c5c1 !important;
-}
+    const year =
+        calendarDate.getFullYear();
 
-.detail-value {
-    padding: 12px 13px;
-    border-radius: 10px;
-    background: #f7f8f6;
-    color: #333;
-    overflow-wrap: anywhere;
-}
+    const month =
+        calendarDate.getMonth();
 
-.detail-label {
-    margin: 0 0 6px;
-    color: #777;
-    font-size: 12px;
-}
 
-.form-group {
-    margin-bottom: 15px;
-}
+    const prefix =
+        `${year}-${String(
+            month + 1
+        ).padStart(2,"0")}`;
 
-.form-group label {
-    display: block;
 
-    margin-bottom: 6px;
+    const monthEvents =
+        events
+            .filter(
+                event =>
+                    event.date.startsWith(
+                        prefix
+                    )
+            )
+            .sort(
+                (a,b) =>
+                    a.date.localeCompare(
+                        b.date
+                    )
+            )
+            .slice(0,4);
 
-    font-size: 12px;
 
-    color: #777;
-}
+    monthEvents.forEach(
+        event => {
 
-.form-group input,
-.form-group select {
-    width: 100%;
+            const card =
+                document.createElement(
+                    "div"
+                );
 
-    padding: 11px;
+            card.className =
+                "month-event-card";
 
-    border: 1px solid #ddd;
 
-    border-radius: 9px;
+            const category =
+                document.createElement(
+                    "div"
+                );
 
-    background: white;
-}
+            category.className =
+                `month-event-category ${event.category}`;
 
-.modal-buttons {
-    display: flex;
+            const categoryNames = {
 
-    gap: 10px;
+                child: "子ども",
+                family: "家族",
+                work: "仕事",
+                home: "家",
+                travel: "旅行",
+                pet: "ペット"
 
-    margin-top: 20px;
-}
+            };
 
-.modal-buttons button {
-    flex: 1;
+            category.textContent =
+                categoryNames[
+                    event.category
+                ];
 
-    padding: 11px;
 
-    border-radius: 9px;
+            const date =
+                document.createElement(
+                    "div"
+                );
 
-    border: none;
-}
+            date.className =
+                "month-event-date";
 
-.cancel-button {
-    background: #f1f1ef;
+            date.textContent =
+                event.date;
 
-    color: #555;
-}
 
-.save-button {
-    background: #24a5aa;
+            const title =
+                document.createElement(
+                    "div"
+                );
 
-    color: white;
+            title.className =
+                "month-event-name";
 
-    font-weight: 700;
+            title.textContent =
+                event.title;
+
+
+            card.appendChild(
+                category
+            );
+
+            card.appendChild(
+                date
+            );
+
+            card.appendChild(
+                title
+            );
+
+
+            container.appendChild(
+                card
+            );
+
+        }
+    );
+
 }
 
 
 /* =========================================================
-   スマホ下部ナビ
+   月移動
 ========================================================= */
 
-.mobile-nav {
-    display: none;
+function changeMonth(offset) {
+
+    calendarDate =
+        new Date(
+            calendarDate.getFullYear(),
+            calendarDate.getMonth() + offset,
+            1
+        );
+
+
+    renderCalendar();
+
+}
+
+
+function goToday() {
+
+    calendarDate =
+        new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            1
+        );
+
+
+    selectedDate =
+        formatDate(today);
+
+
+    renderCalendar();
+
 }
 
 
 /* =========================================================
-   ＋ボタン
+   表示切り替え
 ========================================================= */
 
-.floating-button {
-    position: fixed;
+function changeCalendarView(
+    view,
+    button
+) {
 
-    right: 22px;
-    bottom: 28px;
+    document
+        .querySelectorAll(
+            ".view-switch button"
+        )
+        .forEach(
+            item => {
 
-    width: 58px;
-    height: 58px;
+                item.classList.remove(
+                    "active"
+                );
 
-    border: none;
+            }
+        );
 
-    border-radius: 50%;
 
-    background: #222;
+    button.classList.add(
+        "active"
+    );
 
-    color: white;
 
-    font-size: 30px;
+    if (view === "month") {
 
-    box-shadow:
-        0 8px 20px rgba(0,0,0,0.2);
+        renderCalendar();
 
-    z-index: 300;
+        return;
+
+    }
+
+
+    if (view === "day") {
+
+        renderSelectedDay();
+
+        return;
+
+    }
+
+
+    if (view === "week") {
+
+        alert(
+            "週表示は次の実装で追加します。"
+        );
+
+    }
+
 }
 
 
 /* =========================================================
-   スマホ
+   予定詳細・削除
 ========================================================= */
 
-@media (max-width: 760px) {
+const eventCategoryLabels = {
+    child: "子ども",
+    family: "家族",
+    work: "仕事",
+    home: "家",
+    travel: "旅行",
+    pet: "ペット"
+};
 
-    body {
-        padding-bottom:
-            calc(72px + env(safe-area-inset-bottom));
+function openEventDetailModal(event) {
+    selectedEventForDetail = event;
+
+    document.getElementById("detailEventTitle").textContent = event.title || "（予定名なし）";
+    document.getElementById("detailEventDate").textContent = event.date || "日付なし";
+    document.getElementById("detailEventTime").textContent = event.time || "時刻指定なし";
+    document.getElementById("detailEventCategory").textContent = eventCategoryLabels[event.category] || event.category || "未分類";
+
+    const deleteButton = document.getElementById("deleteEventButton");
+    deleteButton.disabled = false;
+    deleteButton.textContent = "予定を削除";
+
+    document.getElementById("eventDetailModal").classList.add("show");
+}
+
+function closeEventDetailModal() {
+    document.getElementById("eventDetailModal").classList.remove("show");
+    selectedEventForDetail = null;
+}
+
+async function deleteSelectedEvent() {
+    const event = selectedEventForDetail;
+
+    if (!event || !event.id) {
+        alert("削除する予定を特定できませんでした。カレンダーを再読み込みしてお試しください。");
+        return;
     }
 
-    .sidebar {
-        display: none;
+    if (!currentUser) {
+        alert("ログイン状態を確認できません。もう一度ログインしてください。");
+        closeEventDetailModal();
+        document.getElementById("authModal").classList.add("show");
+        return;
     }
 
-    .main {
-        margin-left: 0;
+    const confirmed = window.confirm(`「${event.title}」を削除しますか？\nこの操作は取り消せません。`);
+    if (!confirmed) return;
 
-        padding:
-            17px
-            14px
-            100px;
+    const button = document.getElementById("deleteEventButton");
+    button.disabled = true;
+    button.textContent = "削除中…";
+
+    try {
+        const { data, error } = await supabaseClient
+            .from("family_events")
+            .delete()
+            .eq("id", event.id)
+            .eq("user_id", currentUser.id)
+            .select("id");
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            throw new Error("予定が削除されませんでした。ログイン状態やデータベースの権限設定を確認してください。");
+        }
+
+        events = events.filter(item => item.id !== event.id);
+        closeEventDetailModal();
+        renderCalendar();
+    } catch (error) {
+        console.error("予定の削除に失敗しました:", error);
+        alert("予定の削除に失敗しました。\n\n" + (error.message || "原因不明のエラー"));
+        button.disabled = false;
+        button.textContent = "予定を削除";
+    }
+}
+
+/* =========================================================
+   予定追加
+========================================================= */
+
+function openEventModal() {
+
+    const modal =
+        document.getElementById(
+            "eventModal"
+        );
+
+
+    document.getElementById(
+        "eventDate"
+    ).value =
+        selectedDate;
+
+
+    document.getElementById(
+        "eventTitle"
+    ).value = "";
+
+
+    modal.classList.add(
+        "show"
+    );
+
+}
+
+
+function closeEventModal() {
+
+    document
+        .getElementById(
+            "eventModal"
+        )
+        .classList.remove(
+            "show"
+        );
+
+}
+
+
+async function saveEvent() {
+
+    const date =
+        document.getElementById(
+            "eventDate"
+        ).value;
+
+    const time =
+        document.getElementById(
+            "eventTime"
+        ).value;
+
+    const title =
+        document.getElementById(
+            "eventTitle"
+        ).value.trim();
+
+    const category =
+        document.getElementById(
+            "eventCategory"
+        ).value;
+
+
+    if (!date || !title) {
+
+        alert(
+            "日付と予定を入力してください。"
+        );
+
+        return;
+
     }
 
-    .header {
-        margin-bottom: 18px;
+
+    if (!currentUser) {
+
+        document
+            .getElementById("authModal")
+            .classList.add("show");
+
+        return;
+
     }
 
-    .header-title {
-        font-size: 21px;
+
+    const button =
+        document.querySelector(
+            "#eventModal .save-button"
+        );
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "保存中…";
     }
 
-    .weather {
-        padding: 8px 11px;
+
+    const { data, error } =
+        await supabaseClient
+            .from("family_events")
+            .insert({
+                user_id: currentUser.id,
+                event_date: date,
+                event_time: time || null,
+                title: title,
+                category: category
+            })
+            .select("id, event_date, event_time, title, category")
+            .single();
+
+
+    if (button) {
+        button.disabled = false;
+        button.textContent = "保存";
     }
 
-    .weather-temp {
-        font-size: 14px;
+
+    if (error) {
+
+        alert(
+            "予定の保存に失敗しました。\n\n" +
+            error.message
+        );
+
+        console.error(error);
+
+        return;
+
     }
 
-    .weather-icon {
-        font-size: 20px;
-    }
 
-    /* ホーム */
+    events.push({
+        id: data.id,
+        date: data.event_date,
+        time: data.event_time
+            ? data.event_time.slice(0, 5)
+            : "",
+        title: data.title,
+        category: data.category
+    });
 
-    .hero {
-        min-height: 175px;
 
-        padding: 21px;
+    selectedDate = date;
 
-        border-radius: 17px;
-    }
+    calendarDate =
+        new Date(
+            date + "T00:00:00"
+        );
 
-    .hero h1 {
-        font-size: 23px;
-    }
+    calendarDate =
+        new Date(
+            calendarDate.getFullYear(),
+            calendarDate.getMonth(),
+            1
+        );
 
-    .hero p {
-        font-size: 12px;
-    }
 
-    .quick-grid {
-        grid-template-columns:
-            repeat(2,1fr);
+    closeEventModal();
 
-        gap: 10px;
-    }
+    renderCalendar();
 
-    .quick-card {
-        min-height: 105px;
+}
 
-        padding: 14px;
-    }
 
-    .dashboard {
-        grid-template-columns: 1fr;
+const eventDetailModalElement = document.getElementById("eventDetailModal");
+if (eventDetailModalElement) {
+    eventDetailModalElement.addEventListener("click", function(e) {
+        if (e.target === this) closeEventDetailModal();
+    });
+}
 
-        gap: 14px;
-    }
+/* =========================================================
+   モーダル外クリック
+========================================================= */
 
-    .card {
-        padding: 18px;
-    }
-
-    .children {
-        grid-template-columns: 1fr;
-    }
-
-    /* カレンダー */
-
-    .calendar-page-header {
-        align-items: center;
-        text-align: center;
-        gap: 10px;
-    }
-
-    .calendar-page-header > div {
-        width: 100%;
-    }
-
-    .calendar-page-title {
-        justify-content: center;
-    }
-
-    .calendar-page-title {
-        font-size: 22px;
-    }
-
-    .calendar-page-subtitle {
-        font-size: 11px;
-    }
-
-    .primary-button {
-        padding: 10px 12px;
-
-        white-space: nowrap;
-
-        font-size: 12px;
-    }
-
-    .calendar-toolbar {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .view-switch {
-        order: 1;
-    }
-
-    .month-navigation {
-        width: 100%;
-
-        order: 2;
-
-        justify-content: center;
-    }
-
-    .current-month {
-        min-width: 140px;
-    }
-
-    .calendar-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .calendar-scroll {
-        width: 100%;
-        overflow: hidden;
-
-        border-radius: 14px;
-    }
-
-    .calendar-grid {
-        width: 100%;
-        min-width: 0;
-
-        grid-template-columns:
-            repeat(7, minmax(0, 1fr));
-    }
-
-    .weekday {
-        min-width: 0;
-        padding: 8px 0;
-        font-size: 10px;
-    }
-
-    .day-cell {
-        min-width: 0;
-        min-height: 62px;
-        padding: 4px 3px;
-        overflow: hidden;
-    }
-
-    .day-number {
-        width: 21px;
-        height: 21px;
-        margin-bottom: 2px;
-        font-size: 10px;
-    }
-
-    .calendar-event {
-        width: 100%;
-        margin: 2px 0;
-        padding: 2px 3px;
-        border-radius: 4px;
-        font-size: 8px;
-        line-height: 1.25;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-    }
-
-    .upcoming-card {
-        display: none;
-    }
-
-    .month-events {
-        grid-template-columns:
-            repeat(2,1fr);
-    }
-
-    .floating-button {
-        right: 50%;
-
-        transform: translateX(50%);
-
-        bottom:
-            calc(45px + env(safe-area-inset-bottom));
-    }
-
-    /* スマホナビ */
-
-    .mobile-nav {
-        position: fixed;
-
-        left: 0;
-        right: 0;
-        bottom: 0;
-
-        display: flex;
-
-        width: 100%;
-        height:
-            calc(64px + env(safe-area-inset-bottom));
-
-        padding: 0 0 env(safe-area-inset-bottom) 0;
-
-        background:
-            rgba(255,255,255,0.97);
-
-        border-top: 1px solid #e9e9e6;
-
-        z-index: 250;
-    }
-
-    .mobile-nav-item {
-        flex: 1 1 0;
-        min-width: 0;
-        height: 64px;
-
-        padding: 9px 0 0;
-
-        border: none;
-
-        background: none;
-
-        color: #999;
-
-        font-size: 10px;
-    }
-
-    .mobile-nav-item span {
-        display: block;
-
-        margin-bottom: 3px;
-
-        font-size: 20px;
-    }
-
-    .mobile-nav-item.active {
-        color: #24a5aa;
-
-        font-weight: 700;
-    }
+const eventModalElement = document.getElementById("eventModal");
+if (eventModalElement) {
+    eventModalElement.addEventListener("click", function(e) {
+        if (e.target === this) closeEventModal();
+    });
 }
 
 
 /* =========================================================
-   小さいスマホ
+   初期化
 ========================================================= */
 
-@media (max-width: 380px) {
+initializeSupabaseApp();
 
-    .main {
-        padding-left: 11px;
-        padding-right: 11px;
-    }
-
-    .month-events {
-        grid-template-columns: 1fr;
-    }
-
-    .calendar-page-title {
-        font-size: 20px;
-    }
-
+const loginPasswordElement = document.getElementById("loginPassword");
+if (loginPasswordElement) {
+    loginPasswordElement.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") loginToSupabase();
+    });
 }
