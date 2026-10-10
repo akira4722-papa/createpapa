@@ -1054,6 +1054,25 @@ button {
     background: white;
 }
 
+/* 日付・時刻も予定・カテゴリと同じ幅に統一 */
+.form-group input[type="date"],
+.form-group input[type="time"],
+.form-group input[type="text"],
+.form-group select {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* ブラウザ標準の日付・時刻入力の内部表示による幅の差を抑える */
+.form-group input[type="date"],
+.form-group input[type="time"] {
+    appearance: auto;
+    -webkit-appearance: auto;
+}
+
 .modal-buttons {
     display: flex;
 
