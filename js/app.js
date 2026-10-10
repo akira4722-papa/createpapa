@@ -188,6 +188,29 @@ function hideLoginError() {
 }
 
 
+function getEventCategory(categoryKey) {
+    return eventCategories.find(category => category.category_key === categoryKey) || null;
+}
+
+function getEventCategoryName(categoryKey) {
+    return getEventCategory(categoryKey)?.category_name || "未分類";
+}
+
+function applyEventCategoryStyle(element, categoryKey, type = "label") {
+    const category = getEventCategory(categoryKey);
+    if (!element || !category) return;
+
+    if (type === "dot") {
+        // ドットには、カテゴリ色の濃い色を使用する。
+        if (category.text_color) element.style.backgroundColor = category.text_color;
+        else if (category.color) element.style.backgroundColor = category.color;
+        return;
+    }
+
+    if (category.color) element.style.backgroundColor = category.color;
+    if (category.text_color) element.style.color = category.text_color;
+}
+
 async function loadEventCategoriesFromSupabase() {
     const select = document.getElementById("eventCategory");
     if (!select) return;
@@ -197,7 +220,7 @@ async function loadEventCategoriesFromSupabase() {
 
     const { data, error } = await supabaseClient
         .from("event_categories")
-        .select("category_key, category_name, sort_order")
+        .select("category_key, category_name, sort_order, color, text_color")
         .eq("is_active", true)
         .order("sort_order", { ascending: true })
         .order("category_name", { ascending: true });
@@ -227,6 +250,8 @@ async function loadEventCategoriesFromSupabase() {
 
     select.disabled = false;
 
+    // カテゴリ名・色は以降すべて、このDB取得結果から参照する。
+    renderCalendar();
 }
 
 
@@ -368,8 +393,17 @@ let selectedDate =
 
 
 /*
-    予定データはSupabaseから取得する。
-    categoryにはevent_categories.category_keyを保持する。
+    後でここをSupabaseから取得する。
+
+    形式：
+
+    {
+        id: 1,
+        date: "2026-10-06",
+        time: "08:30",
+        title: "保育園",
+        category: "child"
+    }
 */
 
 let selectedEventForDetail = null;
@@ -683,8 +717,8 @@ function renderCalendar() {
                             "div"
                         );
 
-                    element.className =
-                        `calendar-event ${event.category}`;
+                    element.className = "calendar-event";
+                    applyEventCategoryStyle(element, event.category);
 
                     element.textContent =
                         event.time
@@ -852,11 +886,9 @@ function renderSelectedDay() {
                     "div"
                 );
 
-            category.className =
-                `selected-event-category ${event.category}`;
-
-
+            category.className = "selected-event-category";
             category.textContent = getEventCategoryName(event.category);
+            applyEventCategoryStyle(category, event.category);
 
 
             row.appendChild(time);
@@ -927,8 +959,8 @@ function renderUpcoming() {
                     "div"
                 );
 
-            dot.className =
-                `event-dot ${event.category}`;
+            dot.className = "event-dot";
+            applyEventCategoryStyle(dot, event.category, "dot");
 
 
             const content =
@@ -1053,10 +1085,9 @@ function renderMonthEvents() {
                     "div"
                 );
 
-            category.className =
-                `month-event-category ${event.category}`;
-
+            category.className = "month-event-category";
             category.textContent = getEventCategoryName(event.category);
+            applyEventCategoryStyle(category, event.category);
 
 
             const date =
@@ -1206,25 +1237,17 @@ function changeCalendarView(
    予定詳細・削除
 ========================================================= */
 
-// カテゴリ名はDBから取得したeventCategoriesを共通参照する。
-// DBに存在しない古いカテゴリ値がある場合はキーを表示し、空欄にはしない。
-function getEventCategoryName(categoryKey) {
-    if (!categoryKey) return "未分類";
-
-    const category = eventCategories.find(
-        item => item.category_key === categoryKey
-    );
-
-    return category?.category_name || categoryKey;
-}
-
 function openEventDetailModal(event) {
     selectedEventForDetail = event;
 
     document.getElementById("detailEventTitle").textContent = event.title || "（予定名なし）";
     document.getElementById("detailEventDate").textContent = event.date || "日付なし";
     document.getElementById("detailEventTime").textContent = event.time || "時刻指定なし";
-    document.getElementById("detailEventCategory").textContent = getEventCategoryName(event.category);
+    const detailCategory = document.getElementById("detailEventCategory");
+    detailCategory.textContent = getEventCategoryName(event.category);
+    detailCategory.style.backgroundColor = "";
+    detailCategory.style.color = "";
+    applyEventCategoryStyle(detailCategory, event.category);
 
     const deleteButton = document.getElementById("deleteEventButton");
     deleteButton.disabled = false;
