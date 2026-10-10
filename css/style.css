@@ -1434,3 +1434,32 @@ button {
     }
 
 }
+
+
+/* 予定入力カレンダー・まとめて入力 */
+.event-entry-modal { max-height: calc(100dvh - 28px); overflow-y: auto; }
+.entry-calendar-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.entry-calendar-heading > label:first-child { margin-bottom:0; }
+.check-control { display:inline-flex !important; align-items:center; gap:7px; color:#444 !important; font-size:14px !important; cursor:pointer; }
+.check-control input { width:17px !important; height:17px; margin:0; accent-color:#668b72; }
+.entry-calendar-nav { display:flex; align-items:center; justify-content:space-between; margin:10px 0 8px; }
+.entry-month-button { width:36px; height:32px; border:1px solid #e1e4df; border-radius:9px; background:#f7f8f5; color:#405848; font-size:22px; line-height:1; }
+.entry-calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
+.entry-weekday { text-align:center; padding:5px 0; font-size:11px; color:#7d817b; }
+.entry-weekday.sun { color:#c86b6b; }
+.entry-weekday.sat { color:#5e87bd; }
+.entry-day { min-width:0; height:35px; padding:0; border:1px solid transparent; border-radius:9px; background:#f5f6f2; color:#333; font-size:13px; }
+button.entry-day { cursor:pointer; }
+.entry-day.blank { background:transparent; }
+.entry-day.today { border-color:#91ad98; font-weight:700; }
+.entry-day.selected { background:#63866d; color:#fff; font-weight:700; box-shadow:0 0 0 1px #63866d inset; }
+.entry-calendar-help,.field-hint { display:block; margin-top:6px; color:#777; font-size:11px; line-height:1.5; }
+.all-day-row { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.all-day-row .field-hint { margin:0; }
+.time-fields-hidden { display:none; }
+.event-entry-modal .form-group { margin-bottom:13px; }
+.event-entry-modal .modal-buttons { position:sticky; bottom:-1px; padding-top:12px; background:#fff; }
+@media (max-width:480px) {
+  .event-entry-modal { padding:18px; border-radius:16px; }
+  .entry-day { height:33px; }
+}

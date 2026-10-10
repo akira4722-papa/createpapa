@@ -273,7 +273,7 @@ async function loadHomeTodaySchedule() {
 
     const { data, error } = await supabaseClient
         .from("family_events")
-        .select("id, event_date, event_time, title, category")
+        .select("id, event_date, event_time, event_end_time, is_all_day, title, category")
         .eq("event_date", formatDate(new Date()))
         .order("event_time", { ascending: true, nullsFirst: false });
 
@@ -300,9 +300,9 @@ async function loadHomeTodaySchedule() {
 
         const time = document.createElement("div");
         time.className = "schedule-time";
-        time.textContent = event.event_time
-            ? event.event_time.slice(0, 5)
-            : "時間未設定";
+        time.textContent = event.is_all_day
+            ? "終日"
+            : formatEventTime(event.event_time, event.event_end_time) || "時間未設定";
 
         const details = document.createElement("div");
         const title = document.createElement("div");
@@ -325,36 +325,94 @@ async function loadHomeTodaySchedule() {
 
 
 async function loadEventsFromSupabase() {
-
-    const { data, error } =
-        await supabaseClient
-            .from("family_events")
-            .select("id, event_date, event_time, title, category")
-            .order("event_date", { ascending: true })
-            .order("event_time", { ascending: true });
+    const { data, error } = await supabaseClient
+        .from("family_events")
+        .select("id, event_date, event_time, event_end_time, is_all_day, title, category, recurrence_type, recurrence_until")
+        .order("event_date", { ascending: true })
+        .order("event_time", { ascending: true });
 
     if (error) {
-
-        alert(
-            "予定の取得に失敗しました。\n\n" +
-            error.message
-        );
-
+        alert("予定の取得に失敗しました。\n\n" + error.message + "\n\n新しい項目を追加するSQLをSupabaseで実行したか確認してください。");
         console.error(error);
-
         return;
     }
 
-    events = (data || []).map(event => ({
-        id: event.id,
-        date: event.event_date,
-        time: event.event_time ? event.event_time.slice(0, 5) : "",
-        title: event.title,
-        category: event.category
-    }));
-
+    eventRecords = data || [];
+    refreshExpandedEvents();
     renderCalendar();
+}
 
+// 繰り返し予定は未来の行をDBに大量作成せず、必要な表示期間に合わせて都度展開します。
+// そのため「5年先まで」などの固定上限はなく、カレンダーを何年先に移動しても表示できます。
+function refreshExpandedEvents() {
+    events = [];
+
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const viewStart = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
+    viewStart.setDate(viewStart.getDate() - 7);
+    const viewEnd = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 7);
+    const isCurrentMonth = calendarDate.getFullYear() === today.getFullYear()
+        && calendarDate.getMonth() === today.getMonth();
+    const upcomingEnd = new Date(todayStart);
+    upcomingEnd.setFullYear(upcomingEnd.getFullYear() + 1);
+    const rangeStart = viewStart;
+    const rangeEnd = isCurrentMonth && upcomingEnd > viewEnd ? upcomingEnd : viewEnd;
+
+    eventRecords.forEach(event => {
+        const recurrence = event.recurrence_type || "none";
+        const base = {
+            id: event.id,
+            baseDate: event.event_date,
+            time: event.is_all_day ? "" : formatEventTime(event.event_time, event.event_end_time),
+            title: event.title,
+            category: event.category,
+            isAllDay: Boolean(event.is_all_day),
+            recurrenceType: recurrence,
+            isRecurring: recurrence !== "none"
+        };
+        const start = new Date(event.event_date + "T00:00:00");
+        const explicitUntil = event.recurrence_until
+            ? new Date(event.recurrence_until + "T00:00:00")
+            : null;
+
+        if (recurrence === "none") {
+            if (start >= rangeStart && start <= rangeEnd) {
+                events.push({ ...base, date: event.event_date });
+            }
+            return;
+        }
+
+        // 登録開始日より前には繰り返さず、終了日がある場合だけそこで停止します。
+        let cursor = new Date(start);
+        while (cursor <= rangeEnd && (!explicitUntil || cursor <= explicitUntil)) {
+            if (cursor >= rangeStart && cursor >= start) {
+                events.push({ ...base, date: formatDate(cursor) });
+            }
+            if (recurrence === "weekly") {
+                cursor.setDate(cursor.getDate() + 7);
+            } else if (recurrence === "monthly") {
+                const day = start.getDate();
+                const nextMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+                const lastDay = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0).getDate();
+                cursor = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), Math.min(day, lastDay));
+            } else if (recurrence === "yearly") {
+                const month = start.getMonth();
+                const day = start.getDate();
+                const year = cursor.getFullYear() + 1;
+                const lastDay = new Date(year, month + 1, 0).getDate();
+                cursor = new Date(year, month, Math.min(day, lastDay));
+            } else {
+                break;
+            }
+        }
+    });
+}
+
+function formatEventTime(startTime, endTime) {
+    const start = startTime ? startTime.slice(0, 5) : "";
+    const end = endTime ? endTime.slice(0, 5) : "";
+    if (start && end) return `${start}〜${end}`;
+    return start || end || "";
 }
 
 
@@ -469,6 +527,7 @@ let selectedDate =
 let selectedEventForDetail = null;
 
 let events = [];
+let eventRecords = [];
 
 
 /* =========================================================
@@ -1211,6 +1270,7 @@ function changeMonth(offset) {
         );
 
 
+    refreshExpandedEvents();
     renderCalendar();
 
 }
@@ -1230,6 +1290,7 @@ function goToday() {
         formatDate(today);
 
 
+    refreshExpandedEvents();
     renderCalendar();
 
 }
@@ -1314,7 +1375,7 @@ function openEventDetailModal(event) {
 
     document.getElementById("detailEventTitle").textContent = event.title || "（予定名なし）";
     document.getElementById("detailEventDate").textContent = event.date || "日付なし";
-    document.getElementById("detailEventTime").textContent = event.time || "時刻指定なし";
+    document.getElementById("detailEventTime").textContent = event.isAllDay ? "終日" : (event.time || "時刻指定なし");
     const detailCategory = document.getElementById("detailEventCategory");
     detailCategory.textContent = getEventCategoryName(event.category);
     detailCategory.style.backgroundColor = "";
@@ -1348,7 +1409,10 @@ async function deleteSelectedEvent() {
         return;
     }
 
-    const confirmed = window.confirm(`「${event.title}」を削除しますか？\nこの操作は取り消せません。`);
+    const deleteMessage = event.isRecurring
+        ? `「${event.title}」の繰り返し予定をすべて削除しますか？\nこの操作は取り消せません。`
+        : `「${event.title}」を削除しますか？\nこの操作は取り消せません。`;
+    const confirmed = window.confirm(deleteMessage);
     if (!confirmed) return;
 
     const button = document.getElementById("deleteEventButton");
@@ -1369,7 +1433,8 @@ async function deleteSelectedEvent() {
             throw new Error("予定が削除されませんでした。ログイン状態やデータベースの権限設定を確認してください。");
         }
 
-        events = events.filter(item => item.id !== event.id);
+        eventRecords = eventRecords.filter(item => item.id !== event.id);
+        refreshExpandedEvents();
         closeEventDetailModal();
         renderCalendar();
     } catch (error) {
@@ -1381,175 +1446,163 @@ async function deleteSelectedEvent() {
 }
 
 /* =========================================================
-   予定追加
+   予定入力・複数日一括登録
 ========================================================= */
+let entryCalendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
+let selectedEntryDates = [];
 
 function openEventModal() {
-
-    const modal =
-        document.getElementById(
-            "eventModal"
-        );
-
-
-    document.getElementById(
-        "eventDate"
-    ).value =
-        selectedDate;
-
-
-    document.getElementById(
-        "eventTitle"
-    ).value = "";
-
-
-    modal.classList.add(
-        "show"
-    );
-
+    selectedEntryDates = [selectedDate || formatDate(today)];
+    entryCalendarDate = new Date(selectedEntryDates[0] + "T00:00:00");
+    entryCalendarDate = new Date(entryCalendarDate.getFullYear(), entryCalendarDate.getMonth(), 1);
+    document.getElementById("bulkModeToggle").checked = false;
+    document.getElementById("eventTime").value = "10:00";
+    document.getElementById("eventEndTime").value = "11:00";
+    document.getElementById("eventAllDay").checked = false;
+    document.getElementById("eventTitle").value = "";
+    document.getElementById("eventRecurrence").value = "none";
+    toggleAllDay();
+    renderEntryCalendar();
+    document.getElementById("eventModal").classList.add("show");
 }
-
 
 function closeEventModal() {
-
-    document
-        .getElementById(
-            "eventModal"
-        )
-        .classList.remove(
-            "show"
-        );
-
+    document.getElementById("eventModal").classList.remove("show");
 }
 
+function toggleBulkMode() {
+    const bulk = document.getElementById("bulkModeToggle").checked;
+    if (bulk) {
+        if (!selectedEntryDates.length) selectedEntryDates = [selectedDate || formatDate(today)];
+        document.getElementById("entryCalendarHelp").textContent = "日付をタップして複数選択。もう一度タップすると選択解除できます。";
+    } else {
+        const keep = selectedEntryDates[0] || selectedDate || formatDate(today);
+        selectedEntryDates = [keep];
+        document.getElementById("entryCalendarHelp").textContent = "予定を登録する日を選んでください。";
+    }
+    syncSelectedEntryDate();
+    renderEntryCalendar();
+}
+
+function toggleAllDay() {
+    const allDay = document.getElementById("eventAllDay").checked;
+    document.getElementById("startTimeGroup").classList.toggle("time-fields-hidden", allDay);
+    document.getElementById("endTimeGroup").classList.toggle("time-fields-hidden", allDay);
+    document.getElementById("eventTime").disabled = allDay;
+    document.getElementById("eventEndTime").disabled = allDay;
+}
+
+function changeEntryMonth(offset) {
+    entryCalendarDate = new Date(entryCalendarDate.getFullYear(), entryCalendarDate.getMonth() + offset, 1);
+    renderEntryCalendar();
+}
+
+function syncSelectedEntryDate() {
+    if (selectedEntryDates.length) {
+        document.getElementById("eventDate").value = selectedEntryDates[0];
+    }
+}
+
+function renderEntryCalendar() {
+    const grid = document.getElementById("entryCalendarGrid");
+    if (!grid) return;
+    const year = entryCalendarDate.getFullYear();
+    const month = entryCalendarDate.getMonth();
+    document.getElementById("entryMonthLabel").textContent = `${year}年${month + 1}月`;
+    grid.innerHTML = "";
+    ["日", "月", "火", "水", "木", "金", "土"].forEach((name, i) => {
+        const cell = document.createElement("div");
+        cell.className = "entry-weekday" + (i === 0 ? " sun" : i === 6 ? " sat" : "");
+        cell.textContent = name;
+        grid.appendChild(cell);
+    });
+    const firstDay = new Date(year, month, 1).getDay();
+    const days = new Date(year, month + 1, 0).getDate();
+    for (let i = 0; i < firstDay; i++) {
+        const blank = document.createElement("div");
+        blank.className = "entry-day blank";
+        grid.appendChild(blank);
+    }
+    for (let day = 1; day <= days; day++) {
+        const date = formatDate(new Date(year, month, day));
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "entry-day";
+        if (date === formatDate(today)) button.classList.add("today");
+        if (selectedEntryDates.includes(date)) button.classList.add("selected");
+        button.textContent = String(day);
+        button.setAttribute("aria-pressed", selectedEntryDates.includes(date) ? "true" : "false");
+        button.addEventListener("click", () => {
+            if (document.getElementById("bulkModeToggle").checked) {
+                if (selectedEntryDates.includes(date)) selectedEntryDates = selectedEntryDates.filter(item => item !== date);
+                else selectedEntryDates.push(date);
+            } else {
+                selectedEntryDates = [date];
+            }
+            selectedEntryDates.sort();
+            syncSelectedEntryDate();
+            renderEntryCalendar();
+        });
+        grid.appendChild(button);
+    }
+    document.getElementById("entryCalendarHelp").textContent = document.getElementById("bulkModeToggle").checked
+        ? `複数の日付を選択中です（${selectedEntryDates.length}日）。`
+        : "予定を登録する日を選んでください。";
+}
 
 async function saveEvent() {
+    const bulk = document.getElementById("bulkModeToggle").checked;
+    const dates = [...new Set(selectedEntryDates)].sort();
+    const allDay = document.getElementById("eventAllDay").checked;
+    const startTime = allDay ? null : (document.getElementById("eventTime").value || null);
+    const endTime = allDay ? null : (document.getElementById("eventEndTime").value || null);
+    const title = document.getElementById("eventTitle").value.trim();
+    const category = document.getElementById("eventCategory").value;
+    const recurrence = document.getElementById("eventRecurrence").value || "none";
 
-    const date =
-        document.getElementById(
-            "eventDate"
-        ).value;
+    if (!dates.length) { alert("カレンダーで予定を登録する日を選んでください。"); return; }
+    if (!title) { alert("予定名を入力してください。"); return; }
+    if (!category) { alert("カテゴリを選択してください。カテゴリ一覧を取得できない場合は、ページを再読み込みしてください。"); return; }
+    if (!allDay && startTime && endTime && endTime < startTime) { alert("終了時刻は開始時刻以降にしてください。"); return; }
+    if (!currentUser) { document.getElementById("authModal").classList.add("show"); return; }
 
-    const time =
-        document.getElementById(
-            "eventTime"
-        ).value;
+    const button = document.querySelector("#eventModal .save-button");
+    if (button) { button.disabled = true; button.textContent = "保存中…"; }
+    const rows = dates.map(date => ({
+        user_id: currentUser.id,
+        event_date: date,
+        event_time: startTime,
+        event_end_time: endTime,
+        is_all_day: allDay,
+        title,
+        category,
+        recurrence_type: recurrence,
+        recurrence_until: null
+    }));
 
-    const title =
-        document.getElementById(
-            "eventTitle"
-        ).value.trim();
-
-    const category =
-        document.getElementById(
-            "eventCategory"
-        ).value;
-
-
-    if (!date || !title) {
-
-        alert(
-            "日付と予定を入力してください。"
-        );
-
-        return;
-
-    }
-
-    if (!category) {
-        alert("カテゴリを選択してください。カテゴリ一覧を取得できない場合は、ページを再読み込みしてください。");
-        return;
-    }
-
-
-    if (!currentUser) {
-
-        document
-            .getElementById("authModal")
-            .classList.add("show");
-
-        return;
-
-    }
-
-
-    const button =
-        document.querySelector(
-            "#eventModal .save-button"
-        );
-
-    if (button) {
-        button.disabled = true;
-        button.textContent = "保存中…";
-    }
-
-
-    const { data, error } =
-        await supabaseClient
+    try {
+        const { data, error } = await supabaseClient
             .from("family_events")
-            .insert({
-                user_id: currentUser.id,
-                event_date: date,
-                event_time: time || null,
-                title: title,
-                category: category
-            })
-            .select("id, event_date, event_time, title, category")
-            .single();
-
-
-    if (button) {
-        button.disabled = false;
-        button.textContent = "保存";
+            .insert(rows)
+            .select("id, event_date, event_time, event_end_time, is_all_day, title, category, recurrence_type, recurrence_until");
+        if (error) throw error;
+        eventRecords = eventRecords.concat(data || []);
+        refreshExpandedEvents();
+        renderCalendar();
+        selectedDate = dates[0];
+        calendarDate = new Date(selectedDate + "T00:00:00");
+        calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
+        refreshExpandedEvents();
+        closeEventModal();
+        renderCalendar();
+        if (bulk && dates.length > 1) alert(`${dates.length}日分の予定を登録しました。`);
+    } catch (error) {
+        console.error("予定の保存に失敗しました:", error);
+        alert("予定の保存に失敗しました。\n\n" + (error.message || "原因不明のエラー") + "\n\n必要なデータベース項目が追加されているか、同梱のSQLを確認してください。");
+    } finally {
+        if (button) { button.disabled = false; button.textContent = "保存"; }
     }
-
-
-    if (error) {
-
-        alert(
-            "予定の保存に失敗しました。\n\n" +
-            error.message
-        );
-
-        console.error(error);
-
-        return;
-
-    }
-
-
-    events.push({
-        id: data.id,
-        date: data.event_date,
-        time: data.event_time
-            ? data.event_time.slice(0, 5)
-            : "",
-        title: data.title,
-        category: data.category
-    });
-
-
-    selectedDate = date;
-
-    calendarDate =
-        new Date(
-            date + "T00:00:00"
-        );
-
-    calendarDate =
-        new Date(
-            calendarDate.getFullYear(),
-            calendarDate.getMonth(),
-            1
-        );
-
-
-    closeEventModal();
-
-    renderCalendar();
-
 }
-
 
 const eventDetailModalElement = document.getElementById("eventDetailModal");
 if (eventDetailModalElement) {

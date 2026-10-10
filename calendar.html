@@ -475,104 +475,62 @@
 
 
 
-<!-- =======================================================
-     予定追加モーダル
-======================================================= -->
+<!-- 予定入力モーダル -->
+<div class="modal-overlay" id="eventModal" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
+  <div class="modal event-entry-modal">
+    <div class="modal-title" id="eventModalTitle">予定を追加</div>
 
-<div
-    class="modal-overlay"
-    id="eventModal">
-
-
-    <div class="modal">
-
-
-        <div class="modal-title">
-            予定を追加
-        </div>
-
-
-        <div class="form-group">
-
-            <label>
-                日付
-            </label>
-
-            <input
-                type="date"
-                id="eventDate">
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label>
-                時刻
-            </label>
-
-            <input
-                type="time"
-                id="eventTime"
-                value="10:00">
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label>
-                予定
-            </label>
-
-            <input
-                type="text"
-                id="eventTitle"
-                placeholder="例：保育園イベント">
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label>
-                カテゴリ
-            </label>
-
-            <select id="eventCategory" disabled>
-                <option value="">カテゴリを読み込み中...</option>
-            </select>
-
-        </div>
-
-
-        <div class="modal-buttons">
-
-            <button
-                class="cancel-button"
-                onclick="closeEventModal()">
-
-                キャンセル
-
-            </button>
-
-
-            <button
-                class="save-button"
-                onclick="saveEvent()">
-
-                保存
-
-            </button>
-
-        </div>
-
-
+    <div class="form-group entry-calendar-section">
+      <div class="entry-calendar-heading">
+        <label>カレンダー</label>
+        <label class="check-control"><input type="checkbox" id="bulkModeToggle" onchange="toggleBulkMode()"> まとめて入力</label>
+      </div>
+      <div class="entry-calendar-nav">
+        <button type="button" class="entry-month-button" onclick="changeEntryMonth(-1)" aria-label="前の月">‹</button>
+        <strong id="entryMonthLabel"></strong>
+        <button type="button" class="entry-month-button" onclick="changeEntryMonth(1)" aria-label="次の月">›</button>
+      </div>
+      <div class="entry-calendar-grid" id="entryCalendarGrid" aria-label="予定の日付を選択"></div>
+      <div class="entry-calendar-help" id="entryCalendarHelp">予定を登録する日を選んでください。</div>
+      <input type="hidden" id="eventDate">
     </div>
 
+    <div class="form-group" id="startTimeGroup">
+      <label for="eventTime">開始時刻</label>
+      <input type="time" id="eventTime" value="10:00">
+    </div>
+    <div class="form-group" id="endTimeGroup">
+      <label for="eventEndTime">終了時刻</label>
+      <input type="time" id="eventEndTime" value="11:00">
+    </div>
+    <div class="form-group all-day-row">
+      <label class="check-control"><input type="checkbox" id="eventAllDay" onchange="toggleAllDay()"> 終日</label>
+      <span class="field-hint">オンにすると時刻の入力は不要です。</span>
+    </div>
+    <div class="form-group">
+      <label for="eventTitle">予定名</label>
+      <input type="text" id="eventTitle" placeholder="例：保育園イベント" maxlength="120">
+    </div>
+    <div class="form-group">
+      <label for="eventCategory">カテゴリ</label>
+      <select id="eventCategory" disabled><option value="">カテゴリを読み込み中...</option></select>
+    </div>
+    <div class="form-group">
+      <label for="eventRecurrence">繰り返し</label>
+      <select id="eventRecurrence">
+        <option value="none">繰り返さない</option>
+        <option value="weekly">毎週</option>
+        <option value="monthly">毎月</option>
+        <option value="yearly">毎年</option>
+      </select>
+      <div class="field-hint">誕生日や記念日は「毎年」を選択。繰り返し予定は終了日を指定せず登録されます。</div>
+    </div>
+    <div class="modal-buttons">
+      <button class="cancel-button" type="button" onclick="closeEventModal()">キャンセル</button>
+      <button class="save-button" type="button" onclick="saveEvent()">保存</button>
+    </div>
+  </div>
 </div>
-
-
 
 <!-- =======================================================
      予定詳細モーダル
