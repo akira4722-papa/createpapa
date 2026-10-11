@@ -1382,11 +1382,11 @@ function openEventDetailModal(event) {
     applyEventCategoryStyle(detailCategory, event.category);
 
     const editButton = document.getElementById("editEventButton");
-    if (editButton) { editButton.disabled = false; editButton.textContent = "予定を編集"; }
+    if (editButton) { editButton.disabled = false; editButton.textContent = "編集"; }
 
     const deleteButton = document.getElementById("deleteEventButton");
     deleteButton.disabled = false;
-    deleteButton.textContent = "予定を削除";
+    deleteButton.textContent = "削除";
 
     document.getElementById("eventDetailModal").classList.add("show");
 }
@@ -1482,7 +1482,7 @@ async function deleteSelectedEvent() {
         console.error("予定の削除に失敗しました:", error);
         alert("予定の削除に失敗しました。\n\n" + (error.message || "原因不明のエラー"));
         button.disabled = false;
-        button.textContent = "予定を削除";
+        button.textContent = "削除";
     }
 }
 
