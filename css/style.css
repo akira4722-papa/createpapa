@@ -1493,3 +1493,28 @@ button.entry-day { cursor:pointer; }
   .event-entry-modal { padding:18px; border-radius:16px; }
   .entry-day { height:33px; }
 }
+
+
+/* 予定メモ・今後の予定の詳細表示 */
+.detail-memo {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    min-height: 1.4em;
+}
+
+#eventMemo {
+    width: 100%;
+    min-height: 88px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.upcoming-item {
+    cursor: pointer;
+}
+
+.upcoming-item:focus-visible {
+    outline: 2px solid #6b9ee8;
+    outline-offset: 2px;
+    border-radius: 8px;
+}

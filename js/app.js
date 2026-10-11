@@ -327,7 +327,7 @@ async function loadHomeTodaySchedule() {
 async function loadEventsFromSupabase() {
     const { data, error } = await supabaseClient
         .from("family_events")
-        .select("id, event_date, event_time, event_end_time, is_all_day, title, category, recurrence_type, recurrence_until")
+        .select("id, event_date, event_time, event_end_time, is_all_day, title, category, memo, recurrence_type, recurrence_until")
         .order("event_date", { ascending: true })
         .order("event_time", { ascending: true });
 
@@ -366,6 +366,7 @@ function refreshExpandedEvents() {
             time: event.is_all_day ? "" : formatEventTime(event.event_time, event.event_end_time),
             title: event.title,
             category: event.category,
+            memo: event.memo || "",
             isAllDay: Boolean(event.is_all_day),
             recurrenceType: recurrence,
             isRecurring: recurrence !== "none"
@@ -1192,6 +1193,16 @@ function renderUpcoming() {
 
             row.className =
                 "upcoming-item";
+            row.tabIndex = 0;
+            row.setAttribute("role", "button");
+            row.setAttribute("aria-label", `${getDateLabel(event.date)} ${event.title || "予定"}の詳細を表示`);
+            row.addEventListener("click", () => openEventDetailModal(event));
+            row.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openEventDetailModal(event);
+                }
+            });
 
 
             const dot =
@@ -1502,6 +1513,10 @@ function openEventDetailModal(event) {
     detailCategory.style.backgroundColor = "";
     detailCategory.style.color = "";
     applyEventCategoryStyle(detailCategory, event.category);
+    const detailMemo = document.getElementById("detailEventMemo");
+    if (detailMemo) {
+        detailMemo.textContent = event.memo && event.memo.trim() ? event.memo : "メモはありません";
+    }
 
     const editButton = document.getElementById("editEventButton");
     if (editButton) { editButton.disabled = false; editButton.textContent = "編集"; }
@@ -1542,6 +1557,7 @@ function editSelectedEvent() {
     document.getElementById("eventTitle").value = record.title || "";
     document.getElementById("eventCategory").value = record.category || "";
     document.getElementById("eventRecurrence").value = record.recurrence_type || "none";
+    document.getElementById("eventMemo").value = record.memo || "";
     document.getElementById("eventModalTitle").textContent = record.recurrence_type && record.recurrence_type !== "none"
         ? "繰り返し予定を編集"
         : "予定を編集";
@@ -1626,6 +1642,7 @@ function openEventModal() {
     document.getElementById("eventEndTime").value = "11:00";
     document.getElementById("eventAllDay").checked = false;
     document.getElementById("eventTitle").value = "";
+    document.getElementById("eventMemo").value = "";
     document.getElementById("eventRecurrence").value = "none";
     toggleAllDay();
     renderEntryCalendar();
@@ -1724,6 +1741,7 @@ async function saveEvent() {
     const endTime = allDay ? null : (document.getElementById("eventEndTime").value || null);
     const title = document.getElementById("eventTitle").value.trim();
     const category = document.getElementById("eventCategory").value;
+    const memo = document.getElementById("eventMemo").value.trim();
     const recurrence = document.getElementById("eventRecurrence").value || "none";
 
     if (!dates.length) { alert("カレンダーで予定を登録する日を選んでください。"); return; }
@@ -1749,6 +1767,7 @@ async function saveEvent() {
             is_all_day: allDay,
             title,
             category,
+            memo,
             recurrence_type: recurrence,
             recurrence_until: original.recurrence_until || null
         };
@@ -1758,7 +1777,7 @@ async function saveEvent() {
                 .update(updates)
                 .eq("id", editingEventId)
                 .eq("user_id", currentUser.id)
-                .select("id, user_id, event_date, event_time, event_end_time, is_all_day, title, category, recurrence_type, recurrence_until");
+                .select("id, user_id, event_date, event_time, event_end_time, is_all_day, title, category, memo, recurrence_type, recurrence_until");
             if (error) throw error;
             if (!data || data.length === 0) throw new Error("予定が更新されませんでした。ログイン状態やデータベースの権限設定を確認してください。");
             eventRecords = eventRecords.map(item => String(item.id) === String(editingEventId) ? data[0] : item);
@@ -1788,6 +1807,7 @@ async function saveEvent() {
         is_all_day: allDay,
         title,
         category,
+        memo,
         recurrence_type: recurrence,
         recurrence_until: null
     }));
@@ -1796,7 +1816,7 @@ async function saveEvent() {
         const { data, error } = await supabaseClient
             .from("family_events")
             .insert(rows)
-            .select("id, event_date, event_time, event_end_time, is_all_day, title, category, recurrence_type, recurrence_until");
+            .select("id, event_date, event_time, event_end_time, is_all_day, title, category, memo, recurrence_type, recurrence_until");
         if (error) throw error;
         eventRecords = eventRecords.concat(data || []);
         refreshExpandedEvents();
