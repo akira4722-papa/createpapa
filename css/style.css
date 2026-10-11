@@ -957,6 +957,21 @@ button {
     border-radius: 12px;
 
     background: white;
+
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(36, 165, 170, 0.15);
+}
+
+.month-event-card:focus-visible {
+    outline: 2px solid #24a5aa;
+    outline-offset: 2px;
+}
+
+@media (hover: hover) {
+    .month-event-card:hover {
+        border-color: #24a5aa;
+    }
 }
 
 .month-event-category {
@@ -1511,6 +1526,14 @@ button.entry-day { cursor:pointer; }
 
 .upcoming-item {
     cursor: pointer;
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+    touch-action: manipulation;
+}
+
+.upcoming-item > * {
+    pointer-events: none;
 }
 
 .upcoming-item:focus-visible {

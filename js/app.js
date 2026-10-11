@@ -1330,6 +1330,23 @@ function renderMonthEvents() {
             card.className =
                 "month-event-card";
 
+            // monthEvents内の予定カードから詳細モーダルを開く。
+            // div要素でもタップとキーボード操作の両方に対応する。
+            card.setAttribute("role", "button");
+            card.setAttribute("tabindex", "0");
+            card.setAttribute(
+                "aria-label",
+                `${event.date || "日付なし"} ${event.title || "（予定名なし）"} の予定詳細を開く`
+            );
+            card.addEventListener("click", () => {
+                openEventDetailModal(event);
+            });
+            card.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openEventDetailModal(event);
+                }
+            });
 
             const category =
                 document.createElement(
