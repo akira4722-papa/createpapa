@@ -554,6 +554,113 @@ function formatDate(date) {
 }
 
 
+/* =========================================================
+   日本の祝日判定（国民の祝日・振替休日・国民の休日）
+   ※祝日は予定データに登録せず、カレンダー表示時に判定します。
+========================================================= */
+
+const japaneseHolidayCache = new Map();
+
+function getNthWeekdayOfMonth(year, monthIndex, weekday, nth) {
+    const first = new Date(year, monthIndex, 1).getDay();
+    return 1 + ((weekday - first + 7) % 7) + (nth - 1) * 7;
+}
+
+function getJapaneseHolidayDates(year) {
+    if (japaneseHolidayCache.has(year)) {
+        return japaneseHolidayCache.get(year);
+    }
+
+    const holidays = new Map();
+    const addHoliday = (month, day, name) => {
+        const date = new Date(year, month - 1, day);
+        holidays.set(formatDate(date), name);
+    };
+    const addNthMonday = (month, nth, name) => {
+        addHoliday(month, getNthWeekdayOfMonth(year, month - 1, 1, nth), name);
+    };
+
+    // 2000年以降の祝日制度を対象に、通常の祝日を計算します。
+    addHoliday(1, 1, '元日');
+    addNthMonday(1, 2, '成人の日');
+    addHoliday(2, 11, '建国記念の日');
+    if (year >= 2020) addHoliday(2, 23, '天皇誕生日');
+
+    // 春分の日・秋分の日（1980～2099年の近似式。ここでは2000年以降を使用）
+    const vernalEquinox = Math.floor(20.8431 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+    const autumnalEquinox = Math.floor(23.2488 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+    addHoliday(3, vernalEquinox, '春分の日');
+    addHoliday(4, 29, '昭和の日');
+    addHoliday(5, 3, '憲法記念日');
+    addHoliday(5, 4, 'みどりの日');
+    addHoliday(5, 5, 'こどもの日');
+
+    // 2019年の即位に伴う特例の祝日
+    if (year === 2019) {
+        addHoliday(5, 1, '天皇の即位の日');
+        addHoliday(10, 22, '即位礼正殿の儀');
+    }
+
+    if (year === 2020) {
+        addHoliday(7, 23, '海の日');
+        addHoliday(8, 10, '山の日');
+        addHoliday(7, 24, 'スポーツの日');
+    } else if (year === 2021) {
+        addHoliday(7, 22, '海の日');
+        addHoliday(8, 8, '山の日');
+        addHoliday(7, 23, 'スポーツの日');
+    } else {
+        if (year >= 2003) addNthMonday(7, 3, '海の日');
+        else addHoliday(7, 20, '海の日');
+        addHoliday(8, 11, '山の日');
+        addNthMonday(10, 2, 'スポーツの日');
+    }
+
+    if (year >= 2003) addNthMonday(9, 3, '敬老の日');
+    else addHoliday(9, 15, '敬老の日');
+    addHoliday(9, autumnalEquinox, '秋分の日');
+    addHoliday(11, 3, '文化の日');
+    addHoliday(11, 23, '勤労感謝の日');
+
+    // 国民の休日：祝日に挟まれた平日を祝日扱いにします。
+    const daysInYear = new Date(year, 1, 29).getMonth() === 1 ? 366 : 365;
+    const baseHolidayKeys = new Set(holidays.keys());
+    for (let day = 1; day <= daysInYear; day++) {
+        const date = new Date(year, 0, day);
+        const key = formatDate(date);
+        if (date.getDay() === 0 || baseHolidayKeys.has(key)) continue;
+        const previousKey = formatDate(new Date(year, 0, day - 1));
+        const nextKey = formatDate(new Date(year, 0, day + 1));
+        if (baseHolidayKeys.has(previousKey) && baseHolidayKeys.has(nextKey)) {
+            holidays.set(key, '国民の休日');
+        }
+    }
+
+    // 振替休日：祝日が日曜日の場合、次の祝日ではない日に振り替えます。
+    const sundayHolidayKeys = [...holidays.keys()].filter(key => {
+        const [y, m, d] = key.split('-').map(Number);
+        return new Date(y, m - 1, d).getDay() === 0;
+    });
+    for (const holidayKey of sundayHolidayKeys) {
+        const [y, m, d] = holidayKey.split('-').map(Number);
+        let substitute = new Date(y, m - 1, d + 1);
+        while (holidays.has(formatDate(substitute))) {
+            substitute.setDate(substitute.getDate() + 1);
+        }
+        if (substitute.getFullYear() === year) {
+            holidays.set(formatDate(substitute), '振替休日');
+        }
+    }
+
+    japaneseHolidayCache.set(year, holidays);
+    return holidays;
+}
+
+function getJapaneseHolidayName(date) {
+    return getJapaneseHolidayDates(date.getFullYear()).get(formatDate(date)) || '';
+}
+
+
 function getDateLabel(dateString) {
 
     const date =
@@ -747,6 +854,15 @@ function renderCalendar() {
         cell.className =
             "day-cell";
 
+        const holidayName = getJapaneseHolidayName(cellDate);
+        if (holidayName) {
+            cell.classList.add("holiday");
+            cell.title = holidayName;
+        } else if (cellDate.getDay() === 0) {
+            cell.classList.add("sun");
+        } else if (cellDate.getDay() === 6) {
+            cell.classList.add("sat");
+        }
 
         if (otherMonth) {
 
@@ -799,8 +915,14 @@ function renderCalendar() {
                 "div"
             );
 
-        number.className =
-            "day-number";
+        number.className = "day-number";
+        if (holidayName) {
+            number.classList.add("holiday");
+        } else if (cellDate.getDay() === 0) {
+            number.classList.add("sun");
+        } else if (cellDate.getDay() === 6) {
+            number.classList.add("sat");
+        }
 
         number.textContent =
             dayNumber;

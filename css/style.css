@@ -722,12 +722,36 @@ button {
     font-size: 12px;
 }
 
+/* 土曜は青、日曜と祝日は赤 */
+.day-number.sat {
+    color: #2b91b7;
+}
+
+.day-number.sun,
+.day-number.holiday {
+    color: #e35c62;
+}
+
 .day-cell.today .day-number {
     background: #24a5aa;
 
     color: white;
 
     font-weight: 700;
+}
+
+/* 今日の日付も週末・祝日の色を優先して表示 */
+.day-cell.today .day-number.sat {
+    background: #e8f5fb;
+    color: #2b91b7;
+    box-shadow: inset 0 0 0 2px #24a5aa;
+}
+
+.day-cell.today .day-number.sun,
+.day-cell.today .day-number.holiday {
+    background: #fff0f0;
+    color: #e35c62;
+    box-shadow: inset 0 0 0 2px #24a5aa;
 }
 
 .calendar-event {
