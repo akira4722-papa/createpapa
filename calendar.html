@@ -479,6 +479,7 @@
 <div class="modal-overlay" id="eventModal" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
   <div class="modal event-entry-modal">
     <div class="modal-title" id="eventModalTitle">予定を追加</div>
+    <div class="field-hint" id="eventEntryHelp">編集内容は保存するとカレンダーに反映されます。</div>
 
     <div class="form-group entry-calendar-section">
       <div class="entry-calendar-heading">
@@ -557,6 +558,7 @@
         </div>
 
         <div class="modal-buttons">
+            <button class="save-button" id="editEventButton" type="button" onclick="editSelectedEvent()">予定を編集</button>
             <button class="delete-button" id="deleteEventButton" type="button" onclick="deleteSelectedEvent()">予定を削除</button>
             <button class="cancel-button" type="button" onclick="closeEventDetailModal()">閉じる</button>
         </div>

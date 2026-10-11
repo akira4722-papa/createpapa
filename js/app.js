@@ -525,6 +525,7 @@ let selectedDate =
 */
 
 let selectedEventForDetail = null;
+let editingEventId = null;
 
 let events = [];
 let eventRecords = [];
@@ -1380,11 +1381,53 @@ function openEventDetailModal(event) {
     detailCategory.style.color = "";
     applyEventCategoryStyle(detailCategory, event.category);
 
+    const editButton = document.getElementById("editEventButton");
+    if (editButton) { editButton.disabled = false; editButton.textContent = "予定を編集"; }
+
     const deleteButton = document.getElementById("deleteEventButton");
     deleteButton.disabled = false;
     deleteButton.textContent = "予定を削除";
 
     document.getElementById("eventDetailModal").classList.add("show");
+}
+
+
+function editSelectedEvent() {
+    const event = selectedEventForDetail;
+    if (!event || !event.id) {
+        alert("編集する予定を特定できませんでした。カレンダーを再読み込みしてください。");
+        return;
+    }
+    const record = eventRecords.find(item => String(item.id) === String(event.id));
+    if (!record) {
+        alert("予定データが見つかりません。カレンダーを再読み込みしてください。");
+        return;
+    }
+    if (!currentUser) {
+        alert("ログイン状態を確認できません。もう一度ログインしてください。");
+        return;
+    }
+
+    editingEventId = record.id;
+    selectedEntryDates = [record.event_date];
+    entryCalendarDate = new Date(record.event_date + "T00:00:00");
+    entryCalendarDate = new Date(entryCalendarDate.getFullYear(), entryCalendarDate.getMonth(), 1);
+    document.getElementById("bulkModeToggle").checked = false;
+    document.getElementById("bulkModeToggle").disabled = true;
+    document.getElementById("eventTime").value = record.event_time ? record.event_time.slice(0, 5) : "";
+    document.getElementById("eventEndTime").value = record.event_end_time ? record.event_end_time.slice(0, 5) : "";
+    document.getElementById("eventAllDay").checked = Boolean(record.is_all_day);
+    document.getElementById("eventTitle").value = record.title || "";
+    document.getElementById("eventCategory").value = record.category || "";
+    document.getElementById("eventRecurrence").value = record.recurrence_type || "none";
+    document.getElementById("eventModalTitle").textContent = record.recurrence_type && record.recurrence_type !== "none"
+        ? "繰り返し予定を編集"
+        : "予定を編集";
+    document.getElementById("eventEntryHelp")?.classList.remove("hidden");
+    document.getElementById("eventModal").classList.add("show");
+    closeEventDetailModal();
+    toggleAllDay();
+    renderEntryCalendar();
 }
 
 function closeEventDetailModal() {
@@ -1450,6 +1493,9 @@ let entryCalendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMon
 let selectedEntryDates = [];
 
 function openEventModal() {
+    editingEventId = null;
+    document.getElementById("bulkModeToggle").disabled = false;
+    document.getElementById("eventModalTitle").textContent = "予定を追加";
     selectedEntryDates = [selectedDate || formatDate(today)];
     entryCalendarDate = new Date(selectedEntryDates[0] + "T00:00:00");
     entryCalendarDate = new Date(entryCalendarDate.getFullYear(), entryCalendarDate.getMonth(), 1);
@@ -1565,6 +1611,52 @@ async function saveEvent() {
     if (!currentUser) { document.getElementById("authModal").classList.add("show"); return; }
 
     const button = document.querySelector("#eventModal .save-button");
+    if (editingEventId !== null) {
+        if (dates.length !== 1) { alert("編集時は日付を1つ選択してください。"); return; }
+        if (button) { button.disabled = true; button.textContent = "更新中…"; }
+        const original = eventRecords.find(item => String(item.id) === String(editingEventId));
+        if (!original) {
+            alert("編集対象の予定が見つかりません。カレンダーを再読み込みしてください。");
+            if (button) { button.disabled = false; button.textContent = "変更を保存"; }
+            return;
+        }
+        const updates = {
+            event_date: dates[0],
+            event_time: startTime,
+            event_end_time: endTime,
+            is_all_day: allDay,
+            title,
+            category,
+            recurrence_type: recurrence,
+            recurrence_until: original.recurrence_until || null
+        };
+        try {
+            const { data, error } = await supabaseClient
+                .from("family_events")
+                .update(updates)
+                .eq("id", editingEventId)
+                .eq("user_id", currentUser.id)
+                .select("id, user_id, event_date, event_time, event_end_time, is_all_day, title, category, recurrence_type, recurrence_until");
+            if (error) throw error;
+            if (!data || data.length === 0) throw new Error("予定が更新されませんでした。ログイン状態やデータベースの権限設定を確認してください。");
+            eventRecords = eventRecords.map(item => String(item.id) === String(editingEventId) ? data[0] : item);
+            selectedDate = dates[0];
+            calendarDate = new Date(selectedDate + "T00:00:00");
+            calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
+            editingEventId = null;
+            document.getElementById("bulkModeToggle").disabled = false;
+            closeEventModal();
+            refreshExpandedEvents();
+            renderCalendar();
+        } catch (error) {
+            console.error("予定の更新に失敗しました:", error);
+            alert("予定の更新に失敗しました。\n\n" + (error.message || "原因不明のエラー"));
+        } finally {
+            if (button) { button.disabled = false; button.textContent = "保存"; }
+        }
+        return;
+    }
+
     if (button) { button.disabled = true; button.textContent = "保存中…"; }
     const rows = dates.map(date => ({
         user_id: currentUser.id,
