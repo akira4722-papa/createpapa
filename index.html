@@ -8,7 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="わが家の記録帳">
   <meta name="mobile-web-app-capable" content="yes">
-  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./home.png">
+  <link rel="manifest" href="./manifest.json?v=20261011-4">
   <title>わが家の記録帳</title>
   <style>
     :root { color-scheme: light; background: #f5f5f3; }
@@ -35,11 +36,7 @@
   </style>
 </head>
 <body>
-  <!--
-    ホーム画面アプリのトップレベルURLをindex.htmlに固定するためのシェル。
-    home.html / calendar.html / pet.html はiframe内で遷移する。
-    既存ページのHTML・CSS・JavaScriptは変更しない。
-  -->
+  <!-- ホーム画面WebアプリのURLをindex.htmlに固定し、既存ページをiframe内で表示します。 -->
   <iframe
     id="appFrame"
     src="./home.html"
