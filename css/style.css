@@ -772,7 +772,7 @@ button {
     text-overflow: ellipsis;
 
     font-size: 10px;
-
+    
     line-height: 1.3;
 
     font-weight: 600;
@@ -780,11 +780,41 @@ button {
     cursor: pointer;
 }
 
+.calendar-event.child {
+    background: #ffe5ef;
 
+    color: #d9537a;
+}
 
+.calendar-event.family {
+    background: #fff0cf;
 
+    color: #bf7d18;
+}
 
+.calendar-event.work {
+    background: #e4efff;
 
+    color: #3978c9;
+}
+
+.calendar-event.home {
+    background: #ddf5e8;
+
+    color: #278d60;
+}
+
+.calendar-event.travel {
+    background: #e4eaff;
+
+    color: #596ed2;
+}
+
+.calendar-event.pet {
+    background: #eee4ff;
+
+    color: #8556c5;
+}
 
 
 /* =========================================================
@@ -848,11 +878,29 @@ button {
     border-radius: 50%;
 }
 
+.event-dot.child {
+    background: #ef78a2;
+}
 
+.event-dot.family {
+    background: #efb44c;
+}
 
+.event-dot.work {
+    background: #78a8eb;
+}
 
+.event-dot.home {
+    background: #61c798;
+}
 
+.event-dot.travel {
+    background: #9aabf0;
+}
 
+.event-dot.pet {
+    background: #b78be7;
+}
 
 .upcoming-date {
     color: #777;
@@ -957,7 +1005,7 @@ button {
     border-radius: 12px;
 
     background: white;
-
+    
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: rgba(36, 165, 170, 0.15);
@@ -1541,3 +1589,4 @@ button.entry-day { cursor:pointer; }
     outline-offset: 2px;
     border-radius: 8px;
 }
+

@@ -1,55 +1,6 @@
-<!doctype html>
-<html lang="ja">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <meta name="theme-color" content="#13866e">
-    <title>買い物リスト | わが家の記録帳</title>
-      <link rel="stylesheet" href="css/mock.css">
-    </head>
-    <body>
-      <div class="app">
-        <header class="top">
-          <div class="topline">
-            <a class="back" href="family.html">‹</a>
-              <h1>買い物リスト</h1>
-              </div>
-              <div class="sub">わが家の記録帳 ・ 家族の共有スペース</div>
-              </header>
-              <main class="content">
-                <section class="card">
-                  <div class="cardhead">
-                    <div>
-                      <h2>買い物リスト</h2>
-                        <div class="muted">チェックするとリストから自動で削除されます</div>
-                        </div>
-                        <span class="count" id="shoppingCount">5件</span>
-                        </div>
-                        <form id="addForm" class="formrow">
-                          <input id="newItem" class="field" placeholder="買うものを追加" required>
-                          <button class="btn">追加</button>
-                          </form>
-                          <div id="items">
-                          </div>
-                        </section>
-                        <p class="hint">チェックした品目はこのモック上の一覧から削除されます。</p>
-                        </main>
-                        <nav class="bottom">
-                          <a href="home.html">
-                            <span>⌂</span>ホーム</a>
-                              <a href="calendar.html">
-                                <span>▦</span>カレンダー</a>
-                                  <a class="active" href="family.html">
-                                    <span>♧</span>家族</a>
-                                      <a href="pet.html">
-                                        <span>🐾</span>ペット</a>
-                                        </nav>
-                                      </div>
-                                      <div id="toast" class="toast">
-                                      </div>
-                                      <script src="js/mock.js">
-                                      </script>
-                                      <script src="js/shopping.js">
-                                      </script>
-                                    </body>
-                                  </html>
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#f5f5f3"><title>買い物リスト | わが家の記録帳</title><link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="css/family-pages.css"></head><body>
+<aside class="sidebar"><div class="logo">🏠 わが家の記録帳<small>Family Dashboard</small></div><button class="nav-item" onclick="location.href='home.html'">🏠 ホーム</button><button class="nav-item" onclick="location.href='calendar.html'">📅 カレンダー</button><button class="nav-item" onclick="location.href='family.html'">👨‍👩‍👧‍👧 家族</button><button class="nav-item" onclick="location.href='pet.html'">🐈 ペット</button><button class="nav-item">☰ その他</button></aside><main class="main"><header class="header"><div><div class="date" id="todayDate"></div><div class="header-title">買い物リスト</div></div><div class="family-header-chip"><span>👨‍👩‍👧‍👧</span><span>家族の共有スペース</span></div></header><main class="family-content">
+<section class="family-page-heading"><a class="family-back" href="family.html">‹ 家族に戻る</a><h1>買い物リスト</h1><p>買うものを追加。買い終わったらチェックして削除できます。</p></section>
+<section class="family-panel"><div class="family-panel-heading"><div><h2>買うもの</h2><p>未購入のアイテム</p></div><span class="family-count" id="shoppingCount">0件</span></div><form id="addForm" class="family-form"><input id="newItem" class="family-input" placeholder="例：牛乳、食パン" required maxlength="120"><button class="family-button" type="submit">＋ 追加</button></form><div id="items" class="family-list" aria-live="polite"><p class="family-muted">読み込み中…</p></div></section></main></main>
+<nav class="mobile-nav"><button class="mobile-nav-item" onclick="location.href='home.html'"><span>🏠</span>ホーム</button><button class="mobile-nav-item" onclick="location.href='calendar.html'"><span>📅</span>予定</button><button class="mobile-nav-item active" onclick="location.href='family.html'"><span>👨‍👩‍👧‍👧</span>家族</button><button class="mobile-nav-item" onclick="location.href='pet.html'"><span>🐈</span>ペット</button><button class="mobile-nav-item"><span>☰</span>その他</button></nav><div id="toast" class="family-toast" role="status" aria-live="polite"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/family-db.js"></script><script src="js/family-shopping.js"></script><script>document.getElementById('todayDate').textContent=new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(new Date());</script></body></html>

@@ -1,68 +1,7 @@
-<!doctype html>
-<html lang="ja">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <meta name="theme-color" content="#13866e">
-    <title>家族掲示板 | わが家の記録帳</title>
-      <link rel="stylesheet" href="css/mock.css">
-    </head>
-    <body>
-      <div class="app">
-        <header class="top">
-          <div class="topline">
-            <a class="back" href="family.html">‹</a>
-              <h1>家族掲示板</h1>
-              </div>
-              <div class="sub">わが家の記録帳 ・ 家族の共有スペース</div>
-              </header>
-              <main class="content">
-                <section class="card">
-                  <h2>家族掲示板</h2>
-                    <div class="muted">家族への伝言や共有したいこと</div>
-                      <form id="addForm">
-                        <input id="title" class="field" placeholder="投稿タイトル" required style="margin:10px 0">
-                        <textarea id="message" class="field" placeholder="内容を入力" rows="3">
-                        </textarea>
-                        <button class="btn" style="margin-top:8px">投稿する</button>
-                        </form>
-                      </section>
-                      <section class="card">
-                        <div class="cardhead">
-                          <h2>すべての投稿</h2>
-                            <span class="muted" id="postCount">
-                            </span>
-                          </div>
-                          <div id="posts">
-                          </div>
-                        </section>
-                        <div class="modal" id="confirm">
-                          <div class="modalbox">
-                            <h3>この投稿を削除しますか？</h3>
-                              <p class="muted">削除した投稿は元に戻せません。</p>
-                                <div class="btnrow">
-                                  <button class="btn secondary" id="cancel">キャンセル</button>
-                                    <button class="btn danger" id="delete">削除する</button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </main>
-                              <nav class="bottom">
-                                <a href="home.html">
-                                  <span>⌂</span>ホーム</a>
-                                    <a href="calendar.html">
-                                      <span>▦</span>カレンダー</a>
-                                        <a class="active" href="family.html">
-                                          <span>♧</span>家族</a>
-                                            <a href="pet.html">
-                                              <span>🐾</span>ペット</a>
-                                              </nav>
-                                            </div>
-                                            <div id="toast" class="toast">
-                                            </div>
-                                            <script src="js/mock.js">
-                                            </script>
-                                            <script src="js/board.js">
-                                            </script>
-                                          </body>
-                                        </html>
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#f5f5f3"><title>家族掲示板 | わが家の記録帳</title><link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="css/family-pages.css"></head><body>
+<aside class="sidebar"><div class="logo">🏠 わが家の記録帳<small>Family Dashboard</small></div><button class="nav-item" onclick="location.href='home.html'">🏠 ホーム</button><button class="nav-item" onclick="location.href='calendar.html'">📅 カレンダー</button><button class="nav-item" onclick="location.href='family.html'">👨‍👩‍👧‍👧 家族</button><button class="nav-item" onclick="location.href='pet.html'">🐈 ペット</button><button class="nav-item">☰ その他</button></aside><main class="main"><header class="header"><div><div class="date" id="todayDate"></div><div class="header-title">家族掲示板</div></div><div class="family-header-chip"><span>👨‍👩‍👧‍👧</span><span>家族の共有スペース</span></div></header><main class="family-content">
+<section class="family-page-heading"><a class="family-back" href="family.html">‹ 家族に戻る</a><h1>家族掲示板</h1><p>家族に伝えたいことを残しておこう。</p></section>
+<section class="family-panel"><div class="family-panel-heading"><div><h2>新しい投稿</h2><p>共有したいことを入力</p></div></div><form id="addForm" class="family-form family-form-stack"><input id="title" class="family-input" placeholder="タイトル" required maxlength="120"><textarea id="message" class="family-input" placeholder="内容（任意）" rows="4" maxlength="2000"></textarea><button class="family-button" type="submit">投稿する</button></form></section>
+<section class="family-panel"><div class="family-panel-heading"><div><h2>投稿一覧</h2><p>家族で共有しているメッセージ</p></div><span id="postCount" class="family-count">0件</span></div><div id="posts" class="family-list" aria-live="polite"><p class="family-muted">読み込み中…</p></div></section></main></main>
+<nav class="mobile-nav"><button class="mobile-nav-item" onclick="location.href='home.html'"><span>🏠</span>ホーム</button><button class="mobile-nav-item" onclick="location.href='calendar.html'"><span>📅</span>予定</button><button class="mobile-nav-item active" onclick="location.href='family.html'"><span>👨‍👩‍👧‍👧</span>家族</button><button class="mobile-nav-item" onclick="location.href='pet.html'"><span>🐈</span>ペット</button><button class="mobile-nav-item"><span>☰</span>その他</button></nav><div id="toast" class="family-toast" role="status" aria-live="polite"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/family-db.js"></script><script src="js/family-board.js"></script><script>document.getElementById('todayDate').textContent=new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(new Date());</script></body></html>

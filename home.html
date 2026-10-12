@@ -4,13 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f5f5f3">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="わが家の記録帳">
-<meta name="mobile-web-app-capable" content="yes">
 <title>ホーム | わが家の記録帳</title>
 <link rel="stylesheet" href="css/style.css">
-<link rel="apple-touch-icon" href="./home.png">
 </head>
 <body>
 <!-- =======================================================
@@ -75,10 +70,7 @@
     </button>
 
 
-    <button class="nav-item" type="button" onclick="window.location.href='pet.html'">
-        🐈
-        ペット
-    </button>
+    <button class="nav-item" type="button" onclick="window.location.href='pet.html'">🐈 ペット</button>
 
 
     <button class="nav-item">
@@ -286,13 +278,68 @@
                 </div>
 
 
-                <div id="todayScheduleList">
+                <div class="schedule-item">
 
-                    <div class="schedule-empty">
-                        予定を読み込み中...
+                    <div class="schedule-time">
+                        08:30
+                    </div>
+
+                    <div>
+
+                        <div class="schedule-title">
+                            保育園
+                        </div>
+
+                        <div class="schedule-note">
+                            いつもの登園
+                        </div>
+
                     </div>
 
                 </div>
+
+
+                <div class="schedule-item">
+
+                    <div class="schedule-time">
+                        18:00
+                    </div>
+
+                    <div>
+
+                        <div class="schedule-title">
+                            お迎え
+                        </div>
+
+                        <div class="schedule-note">
+                            パパ担当
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="schedule-item">
+
+                    <div class="schedule-time">
+                        21:00
+                    </div>
+
+                    <div>
+
+                        <div class="schedule-title">
+                            子どもたち就寝
+                        </div>
+
+                        <div class="schedule-note">
+                            明日の準備
+                        </div>
+
+                    </div>
+
+                </div>
+
 
             </div>
 
@@ -530,10 +577,10 @@
     </button>
 
 
-    <button class="mobile-nav-item">
+    <button class="mobile-nav-item" type="button" onclick="window.location.href='family.html'"><span>👨‍👩‍👧‍👧</span>家族</button>
 
-        <span>👨‍👩‍👧‍👧</span>
-        家族
+        <span>📷</span>
+        記録
 
     </button>
 
@@ -544,10 +591,6 @@
         ペット
 
     </button>
-
-
-    
-
 
     <button class="mobile-nav-item">
 
