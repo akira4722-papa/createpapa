@@ -1,6 +1,7 @@
 let month = new Date(today.getFullYear(), today.getMonth(), 1);
 let selected = days(1);
 let pendingDates = [];
+let bulkMode = false;
 const data = {};
 
 for (let day = 1; day <= 31; day++) {
@@ -51,7 +52,14 @@ function renderCalendar() {
 
     button.onclick = () => {
       selected = dateKey;
-      $("date").value = dateKey;
+      if (bulkMode) {
+        if (pendingDates.includes(dateKey)) {
+          pendingDates = pendingDates.filter((date) => date !== dateKey);
+        } else {
+          pendingDates.push(dateKey);
+          pendingDates.sort();
+        }
+      }
       renderCalendar();
     };
     $("calendar").append(button);
@@ -81,17 +89,6 @@ function renderPendingDates() {
     const chip = document.createElement("span");
     chip.className = "date-chip";
     chip.textContent = label(dateKey);
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "chip-remove";
-    remove.textContent = "×";
-    remove.setAttribute("aria-label", label(dateKey) + "を選択から外す");
-    remove.onclick = () => {
-      pendingDates = pendingDates.filter((date) => date !== dateKey);
-      renderPendingDates();
-      renderCalendar();
-    };
-    chip.append(remove);
     container.append(chip);
   });
 }
@@ -105,38 +102,36 @@ $("next").onclick = () => {
   renderCalendar();
 };
 
-$("addDate").onclick = () => {
-  const dateKey = $("date").value;
-  if (!dateKey) {
-    toast("日付を選択してください");
-    return;
-  }
-  if (!pendingDates.includes(dateKey)) pendingDates.push(dateKey);
-  pendingDates.sort();
-  selected = dateKey;
-  month = new Date(dateKey + "T00:00:00");
-  month.setDate(1);
+$("bulkMode").onchange = () => {
+  bulkMode = $("bulkMode").checked;
+  $("bulkSelection").hidden = !bulkMode;
+  $("selectionHelp").textContent = bulkMode
+    ? "カレンダーの日付をタップして、反映したい日を複数選択します。"
+    : "カレンダーで日付を選び、収集区分を指定して登録します。";
+  $("applyButton").textContent = bulkMode ? "選択した日に一括反映" : "選択した日に反映";
+  if (!bulkMode) pendingDates = [];
   renderCalendar();
 };
 
 $("addForm").onsubmit = (event) => {
   event.preventDefault();
-  if (!pendingDates.length) {
-    toast("先に登録する日付を追加してください");
+  const datesToApply = bulkMode ? [...pendingDates] : [selected];
+  if (!datesToApply.length) {
+    toast("カレンダーで反映する日付を選択してください");
     return;
   }
 
   const type = $("type").value;
-  pendingDates.forEach((dateKey) => {
+  datesToApply.forEach((dateKey) => {
     data[dateKey] = [...new Set([...(data[dateKey] || []), type])];
   });
-  selected = pendingDates[pendingDates.length - 1];
+  selected = datesToApply[datesToApply.length - 1];
   month = new Date(selected + "T00:00:00");
   month.setDate(1);
-  const count = pendingDates.length;
+  const count = datesToApply.length;
   pendingDates = [];
   renderCalendar();
-  toast(`${count}日分の収集日を登録しました`);
+  toast(bulkMode ? `${count}日分に一括反映しました` : "収集日を反映しました");
 };
 
 renderCalendar();

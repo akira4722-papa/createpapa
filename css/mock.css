@@ -597,3 +597,21 @@ body {
 .chip-remove { border: 0; padding: 0; background: transparent; color: inherit; font-size: 17px; line-height: 1; cursor: pointer; }
 .day.pending-date { outline: 2px solid #13866e; outline-offset: -3px; }
 @media (max-width: 600px) { .multi-date-row { flex-wrap: wrap; } .multi-date-row .field { flex: 1 1 150px; } }
+
+/* ごみ収集日: カレンダーから複数日を選択 */
+.bulk-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 12px 0 4px;
+  padding: 10px 12px;
+  border: 1px solid #cfe6dc;
+  border-radius: 10px;
+  background: #f2faf6;
+  color: #176b55;
+  font-weight: 700;
+  cursor: pointer;
+}
+.bulk-toggle input { width: 18px; height: 18px; accent-color: #13866e; }
+.day.pending-date { background: #d0eee2; border: 2px solid #13866e; font-weight: 800; }
+#bulkSelection[hidden] { display: none; }
