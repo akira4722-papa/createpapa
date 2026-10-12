@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#13866e">
+    <title>家族掲示板 | わが家の記録帳</title>
+      <link rel="stylesheet" href="css/mock.css">
+    </head>
+    <body>
+      <div class="app">
+        <header class="top">
+          <div class="topline">
+            <a class="back" href="family.html">‹</a>
+              <h1>家族掲示板</h1>
+              </div>
+              <div class="sub">わが家の記録帳 ・ 家族の共有スペース</div>
+              </header>
+              <main class="content">
+                <section class="card">
+                  <h2>家族掲示板</h2>
+                    <div class="muted">家族への伝言や共有したいこと</div>
+                      <form id="addForm">
+                        <input id="title" class="field" placeholder="投稿タイトル" required style="margin:10px 0">
+                        <textarea id="message" class="field" placeholder="内容を入力" rows="3">
+                        </textarea>
+                        <button class="btn" style="margin-top:8px">投稿する</button>
+                        </form>
+                      </section>
+                      <section class="card">
+                        <div class="cardhead">
+                          <h2>すべての投稿</h2>
+                            <span class="muted" id="postCount">
+                            </span>
+                          </div>
+                          <div id="posts">
+                          </div>
+                        </section>
+                        <div class="modal" id="confirm">
+                          <div class="modalbox">
+                            <h3>この投稿を削除しますか？</h3>
+                              <p class="muted">削除した投稿は元に戻せません。</p>
+                                <div class="btnrow">
+                                  <button class="btn secondary" id="cancel">キャンセル</button>
+                                    <button class="btn danger" id="delete">削除する</button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </main>
+                              <nav class="bottom">
+                                <a href="home.html">
+                                  <span>⌂</span>ホーム</a>
+                                    <a href="calendar.html">
+                                      <span>▦</span>カレンダー</a>
+                                        <a class="active" href="family.html">
+                                          <span>♧</span>家族</a>
+                                            <a href="pet.html">
+                                              <span>🐾</span>ペット</a>
+                                              </nav>
+                                            </div>
+                                            <div id="toast" class="toast">
+                                            </div>
+                                            <script src="js/mock.js">
+                                            </script>
+                                            <script src="js/board.js">
+                                            </script>
+                                          </body>
+                                        </html>

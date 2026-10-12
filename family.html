@@ -1,99 +1,129 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#f5f5f3">
-<title>家族 | わが家の記録帳</title>
-<link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="css/family.css">
-</head>
-<body>
-<aside class="sidebar">
-  <div class="logo">🏠 わが家の記録帳<small>Family Dashboard</small></div>
-  <button class="nav-item" onclick="go('home.html')">🏠 ホーム</button>
-  <button class="nav-item" onclick="go('calendar.html')">📅 カレンダー</button>
-  <button class="nav-item">👧 子どもたちの記録</button>
-  <button class="nav-item">🏡 家の管理</button>
-  <button class="nav-item">💰 家計・支出</button>
-  <button class="nav-item">🚗 旅行・おでかけ</button>
-  <button class="nav-item">🌱 庭・芝生</button>
-  <button class="nav-item" onclick="go('pet.html')">🐈 ペット</button>
-  <button class="nav-item">📷 写真・思い出</button>
-  <button class="nav-item">📝 メモ・Todo</button>
-  <button class="nav-item active">👨‍👩‍👧‍👧 家族</button>
-  <button class="nav-item">⚙️ 設定</button>
-</aside>
-<main class="main family-main">
-  <header class="header">
-    <div><div class="date" id="todayLabel"></div><div class="header-title">家族のこと</div></div>
-    <div class="family-header-icon">👨‍👩‍👧‍👧</div>
-  </header>
-  <section class="family-intro">
-    <div class="intro-copy"><span class="eyebrow">OUR FAMILY HUB</span><h1>家族の「あれどこ？」「忘れてた！」を、ここに。</h1><p>買い物、タスク、ごみの日、伝言、持ち物をひとまとめに。</p></div>
-    <div class="intro-mark">🏡</div>
-  </section>
-  <div class="family-summary" aria-label="今日の状況">
-    <div><span class="summary-icon">🛒</span><span class="summary-label">買い物</span><strong id="shoppingCount">3件</strong></div>
-    <div><span class="summary-icon">☑️</span><span class="summary-label">タスク</span><strong id="taskCount">3件</strong></div>
-    <div><span class="summary-icon">♻️</span><span class="summary-label">次のごみの日</span><strong id="nextGarbage">明日</strong></div>
-  </div>
-  <div class="family-grid">
-    <section class="family-card shopping-card">
-      <div class="section-heading"><div><span class="section-icon mint">🛒</span><h2>買い物リスト</h2><p>チェックしたら自動でリストから削除</p></div><span class="count-pill" id="shoppingPill">3件</span></div>
-      <form id="shoppingForm" class="inline-add"><input id="shoppingInput" type="text" placeholder="買うものを追加" aria-label="買うもの"><button class="primary-button" type="submit">＋ 追加</button></form>
-      <div id="shoppingList" class="check-list"></div>
-      <p class="micro-note">※ モックでは画面内のみで動作します。Supabase保存は未接続です。</p>
-    </section>
-
-    <section class="family-card task-card">
-      <div class="section-heading"><div><span class="section-icon lilac">📌</span><h2>家族タスク</h2><p>期限切れと、今日から7日以内のタスク</p></div><span class="count-pill warning" id="taskPill">3件</span></div>
-      <form id="taskForm" class="task-add"><input id="taskInput" type="text" placeholder="タスク名" aria-label="タスク名"><input id="taskDate" type="date" aria-label="期限"><button class="primary-button" type="submit">追加</button></form>
-      <div id="taskList" class="task-list"></div>
-      <div class="legend"><span><i class="dot overdue"></i>期限切れ</span><span><i class="dot soon"></i>期限が近い</span></div>
-    </section>
-
-    <section class="family-card garbage-card">
-      <div class="section-heading"><div><span class="section-icon blue">♻️</span><h2>ごみ収集日</h2><p>収集日をカレンダーで登録・確認</p></div><button class="text-button" id="addGarbageBtn">＋ 日を登録</button></div>
-      <div class="calendar-mini-head"><button class="circle-button" id="prevMonth" aria-label="前月">‹</button><strong id="garbageMonth"></strong><button class="circle-button" id="nextMonth" aria-label="翌月">›</button></div>
-      <div class="mini-calendar" id="garbageCalendar"></div>
-      <div class="garbage-key"><span><i class="garbage-dot burn"></i>燃えるごみ</span><span><i class="garbage-dot recycle"></i>資源ごみ</span><span><i class="garbage-dot nonburn"></i>燃えないごみ</span></div>
-      <div class="selected-garbage" id="selectedGarbage">日付を選ぶと収集予定を確認できます。</div>
-    </section>
-
-    <section class="family-card board-card">
-      <div class="section-heading"><div><span class="section-icon peach">💬</span><h2>家族掲示板</h2><p>伝言や共有しておきたいこと</p></div></div>
-      <form id="boardForm" class="board-form"><input id="boardTitle" type="text" placeholder="伝言のタイトル" aria-label="伝言のタイトル" required><textarea id="boardBody" rows="2" placeholder="内容を入力" aria-label="伝言の内容"></textarea><button class="primary-button" type="submit">掲示板に投稿</button></form>
-      <div id="boardList" class="board-list"></div>
-    </section>
-
-    <section class="family-card packing-card">
-      <div class="section-heading"><div><span class="section-icon yellow">🧳</span><h2>荷物チェック</h2><p>お出かけ前の忘れ物防止</p></div><button class="outline-button" id="resetPacking">↻ リセット</button></div>
-      <div class="packing-controls"><label for="packingTemplate">リストのテンプレート</label><select id="packingTemplate"><option value="daytrip">日帰りお出かけ</option><option value="overnight">宿泊旅行</option><option value="pool">プール・水遊び</option><option value="custom">自由編集リスト</option></select></div>
-      <div id="packingList" class="check-list packing-list"></div>
-      <form id="packingAddForm" class="inline-add"><input id="packingInput" type="text" placeholder="持ち物を自由に追加" aria-label="持ち物"><button class="primary-button" type="submit">＋ 追加</button></form>
-      <div class="packing-progress"><div class="progress-track"><span id="packingProgressBar"></span></div><span id="packingProgressText">0 / 6 準備OK</span></div>
-    </section>
-
-    <section class="family-card notes-card">
-      <div class="section-heading"><div><span class="section-icon rose">✨</span><h2>家族メモ</h2><p>ちょっとした共有事項</p></div></div>
-      <div class="family-note"><span>👧</span><div><strong>保育園の持ち物</strong><p>週明けは着替えセットを多めに。</p></div></div>
-      <div class="family-note"><span>🏠</span><div><strong>家のこと</strong><p>宅配便が届く予定。受け取りを確認。</p></div></div>
-      <div class="family-note"><span>💡</span><div><strong>使い方メモ</strong><p>ここは家族みんなで使う共有スペースです。</p></div></div>
-    </section>
-  </div>
-  <footer class="family-footer">わが家の記録帳 <span>・</span> 家族の共有スペース</footer>
-</main>
-<nav class="mobile-nav">
-  <button class="mobile-nav-item" onclick="go('home.html')"><span>🏠</span>ホーム</button>
-  <button class="mobile-nav-item" onclick="go('calendar.html')"><span>📅</span>予定</button>
-  <button class="mobile-nav-item active"><span>👨‍👩‍👧‍👧</span>家族</button>
-  <button class="mobile-nav-item" onclick="go('pet.html')"><span>🐈</span>ペット</button>
-  <button class="mobile-nav-item"><span>☰</span>その他</button>
-</nav>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
-<div class="modal-backdrop" id="garbageModal" aria-hidden="true"><div class="mock-modal"><button class="modal-close" data-close="garbageModal" aria-label="閉じる">×</button><h2>ごみ収集日を登録</h2><form id="garbageForm"><label>日付<input type="date" id="garbageDate" required></label><label>収集区分<select id="garbageType"><option value="burn">燃えるごみ</option><option value="recycle">資源ごみ</option><option value="nonburn">燃えないごみ</option></select></label><button class="primary-button full-button" type="submit">登録する</button></form></div></div>
-<div class="modal-backdrop" id="confirmModal" aria-hidden="true"><div class="mock-modal confirm-modal"><h2>投稿を削除しますか？</h2><p>削除した投稿は元に戻せません。</p><div class="modal-actions"><button class="outline-button" id="cancelDelete">キャンセル</button><button class="danger-button" id="confirmDelete">削除する</button></div></div></div>
-<script src="js/family.js"></script>
-</body>
-</html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#13866e">
+    <title>家族 | わが家の記録帳</title>
+      <link rel="stylesheet" href="css/mock.css">
+    </head>
+    <body>
+      <div class="app">
+        <header class="top">
+          <div class="topline">
+            <span style="width:34px;text-align:center;font-size:22px">⌂</span>
+              <h1>家族</h1>
+              </div>
+              <div class="sub">わが家の記録帳 ・ 家族の共有スペース</div>
+              </header>
+              <main class="content">
+                <section class="hero">
+                  <div>
+                    <div class="eyebrow">OUR FAMILY HUB</div>
+                      <h2>家族のこと、ここで共有。</h2>
+                        <p>毎日の「あれどこ？」「忘れてた！」を<br>ひとまとめに。</p>
+                        </div>
+                        <div class="house">🏡</div>
+                        </section>
+                        <div class="dashboard-grid">
+                          <section class="card">
+                            <a class="link" href="shopping.html">
+                              <div class="cardhead">
+                                <div class="headleft">
+                                  <div class="ico">🛒</div>
+                                    <div>
+                                      <h2>買い物リスト</h2>
+                                        <div class="muted">未購入のアイテム</div>
+                                        </div>
+                                      </div>
+                                      <span class="count" id="shoppingCount">5件</span>
+                                        <span class="arrow">›</span>
+                                        </div>
+                                      </a>
+                                    </section>
+                                    <section class="card">
+                                      <a class="link" href="tasks.html">
+                                        <div class="cardhead">
+                                          <div class="headleft">
+                                            <div class="ico blue">☑️</div>
+                                              <div>
+                                                <h2>家族タスク</h2>
+                                                  <div class="muted">期限切れ・7日以内</div>
+                                                  </div>
+                                                </div>
+                                                <span class="count" id="taskCount">5件</span>
+                                                  <span class="arrow">›</span>
+                                                  </div>
+                                                </a>
+                                                <div id="dashboardTasks">
+                                                </div>
+                                              </section>
+                                              <section class="card">
+                                                <a class="link" href="garbage.html">
+                                                  <div class="cardhead">
+                                                    <div class="headleft">
+                                                      <div class="ico orange">♻️</div>
+                                                        <div>
+                                                          <h2>ごみ収集日</h2>
+                                                            <div class="muted">明日の収集予定</div>
+                                                            </div>
+                                                          </div>
+                                                          <span class="arrow">›</span>
+                                                          </div>
+                                                        </a>
+                                                        <div id="tomorrowGarbage" class="summaryline">
+                                                          <strong>🔥 燃えるごみ</strong>
+                                                          </div>
+                                                        </section>
+                                                        <section class="card">
+                                                          <a class="link" href="board.html">
+                                                            <div class="cardhead">
+                                                              <div class="headleft">
+                                                                <div class="ico purple">💬</div>
+                                                                  <div>
+                                                                    <h2>家族掲示板</h2>
+                                                                      <div class="muted">最新の投稿 3件</div>
+                                                                      </div>
+                                                                    </div>
+                                                                    <span class="arrow">›</span>
+                                                                    </div>
+                                                                  </a>
+                                                                  <div id="latestPosts">
+                                                                  </div>
+                                                                </section>
+                                                                <section class="card">
+                                                                  <a class="link" href="packing.html">
+                                                                    <div class="cardhead">
+                                                                      <div class="headleft">
+                                                                        <div class="ico yellow">🧳</div>
+                                                                          <div>
+                                                                            <h2>荷物チェック</h2>
+                                                                              <div class="muted">テンプレートから準備を開始</div>
+                                                                              </div>
+                                                                            </div>
+                                                                            <span class="arrow">›</span>
+                                                                            </div>
+                                                                          </a>
+                                                                        </section>
+                                                                      </div>
+                                                                      <p class="hint">これは画面確認用のモックです。表示データはサンプルで、データベースには保存されません。</p>
+                                                                      </main>
+                                                                      <nav class="bottom">
+                                                                        <a href="home.html">
+                                                                          <span>⌂</span>ホーム</a>
+                                                                            <a href="calendar.html">
+                                                                              <span>▦</span>カレンダー</a>
+                                                                                <a class="active" href="family.html">
+                                                                                  <span>♧</span>家族</a>
+                                                                                    <a href="pet.html">
+                                                                                      <span>🐾</span>ペット</a>
+                                                                                      </nav>
+                                                                                    </div>
+                                                                                    <div id="toast" class="toast">
+                                                                                    </div>
+                                                                                    <script src="js/mock.js">
+                                                                                    </script>
+                                                                                    <script src="js/dashboard.js">
+                                                                                    </script>
+                                                                                  </body>
+                                                                                </html>

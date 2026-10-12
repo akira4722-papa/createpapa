@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#13866e">
+    <title>ごみ収集日 | わが家の記録帳</title>
+      <link rel="stylesheet" href="css/mock.css">
+    </head>
+    <body>
+      <div class="app">
+        <header class="top">
+          <div class="topline">
+            <a class="back" href="family.html">‹</a>
+              <h1>ごみ収集日</h1>
+              </div>
+              <div class="sub">わが家の記録帳 ・ 家族の共有スペース</div>
+              </header>
+              <main class="content">
+                <section class="card">
+                  <div class="cardhead">
+                    <div>
+                      <h2>ごみ収集カレンダー</h2>
+                        <div class="muted">日付を選ぶと収集区分を確認できます</div>
+                        </div>
+                      </div>
+                      <div class="cardhead">
+                        <button class="btn secondary" id="prev">‹ 前月</button>
+                          <strong id="month">
+                          </strong>
+                          <button class="btn secondary" id="next">翌月 ›</button>
+                          </div>
+                          <div id="calendar" class="daygrid">
+                          </div>
+                          <div class="legend">
+                            <span>
+                              <i>
+                              </i>燃えるごみ</span>
+                              <span>
+                                <i class="recycle">
+                                </i>資源ごみ</span>
+                                <span>
+                                  <i class="nonburn">
+                                  </i>燃えないごみ</span>
+                                </div>
+                                <div class="divider">
+                                </div>
+                                <h2 id="selectedTitle">選択した日の収集予定</h2>
+                                  <div id="selectedTypes" class="muted">
+                                  </div>
+                                  <form id="addForm" class="formrow">
+                                    <input id="date" class="field" type="date" required>
+                                    <select id="type" class="field">
+                                      <option value="burn">燃えるごみ</option>
+                                        <option value="recycle">資源ごみ</option>
+                                          <option value="nonburn">燃えないごみ</option>
+                                          </select>
+                                          <button class="btn">登録</button>
+                                          </form>
+                                        </section>
+                                      </main>
+                                      <nav class="bottom">
+                                        <a href="home.html">
+                                          <span>⌂</span>ホーム</a>
+                                            <a href="calendar.html">
+                                              <span>▦</span>カレンダー</a>
+                                                <a class="active" href="family.html">
+                                                  <span>♧</span>家族</a>
+                                                    <a href="pet.html">
+                                                      <span>🐾</span>ペット</a>
+                                                      </nav>
+                                                    </div>
+                                                    <div id="toast" class="toast">
+                                                    </div>
+                                                    <script src="js/mock.js">
+                                                    </script>
+                                                    <script src="js/garbage.js">
+                                                    </script>
+                                                  </body>
+                                                </html>
