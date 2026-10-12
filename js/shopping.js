@@ -10,7 +10,7 @@ items.forEach((v, i)=> {
 let cb=document.createElement('input');cb.type='checkbox';cb.className='check';cb.onchange=()=> {
 items.splice(i, 1);render();toast('リストから削除しました')
 }
-;let el=row(v, '食料品', cb);$('items').append(el)
+;let el=row(v, '', cb);$('items').append(el)
 }
 )
 }

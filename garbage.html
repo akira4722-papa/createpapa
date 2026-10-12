@@ -48,15 +48,22 @@
                                 <h2 id="selectedTitle">選択した日の収集予定</h2>
                                   <div id="selectedTypes" class="muted">
                                   </div>
+                                  <div class="divider"></div>
+                                  <h2>収集日をまとめて登録</h2>
+                                  <p class="muted">日付を複数追加してから、同じ収集区分を一括登録できます。</p>
+                                  <div class="formrow multi-date-row">
+                                    <input id="date" class="field" type="date">
+                                    <button class="btn secondary" type="button" id="addDate">日付を追加</button>
+                                  </div>
+                                  <div id="selectedDates" class="selected-dates" aria-live="polite"></div>
                                   <form id="addForm" class="formrow">
-                                    <input id="date" class="field" type="date" required>
-                                    <select id="type" class="field">
+                                    <select id="type" class="field" aria-label="収集区分">
                                       <option value="burn">燃えるごみ</option>
-                                        <option value="recycle">資源ごみ</option>
-                                          <option value="nonburn">燃えないごみ</option>
-                                          </select>
-                                          <button class="btn">登録</button>
-                                          </form>
+                                      <option value="recycle">資源ごみ</option>
+                                      <option value="nonburn">燃えないごみ</option>
+                                    </select>
+                                    <button class="btn">選択した日付を一括登録</button>
+                                  </form>
                                         </section>
                                       </main>
                                       <nav class="bottom">

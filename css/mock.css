@@ -588,3 +588,12 @@ body {
 }
 
 }
+
+
+/* 複数日の収集日登録 */
+.multi-date-row { margin: 10px 0; }
+.selected-dates { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }
+.date-chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border-radius: 999px; background: #e3f5ed; color: #176b55; font-size: 12px; }
+.chip-remove { border: 0; padding: 0; background: transparent; color: inherit; font-size: 17px; line-height: 1; cursor: pointer; }
+.day.pending-date { outline: 2px solid #13866e; outline-offset: -3px; }
+@media (max-width: 600px) { .multi-date-row { flex-wrap: wrap; } .multi-date-row .field { flex: 1 1 150px; } }
