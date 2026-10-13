@@ -63,8 +63,7 @@
 <nav class="mobile-nav">
   <button class="mobile-nav-item" type="button" onclick="location.href='home.html'"><span>🏠</span>ホーム</button>
   <button class="mobile-nav-item" type="button" onclick="location.href='calendar.html'"><span>📅</span>予定</button>
-    <button class="mobile-nav-item" type="button" onclick="location.href='family.html'"><span>👨‍👩‍👧‍👧</span>家族</button>
-
+  <button class="mobile-nav-item" type="button" onclick="location.href='family.html'"><span>👨‍👩‍👧‍👧</span>家族</button>
   <button class="mobile-nav-item active" type="button" onclick="location.href='pet.html'"><span>🐈</span>ペット</button>
   <button class="mobile-nav-item"><span>☰</span>その他</button>
 </nav>
@@ -81,8 +80,16 @@
       <label>メモ<textarea id="entryBody" rows="4" placeholder="気づいたこと、症状が出た時間、先生からの説明など"></textarea></label>
       <div class="pet-form-grid optional-fields" id="vetFields">
         <label>病院・先生<input id="entryClinic" placeholder="病院名など"></label>
-        <label>薬・診察内容<input id="entryTreatment" placeholder="処方薬、診断、次回予約など"></label>
+        <label id="entryTreatmentField">薬・診察内容<input id="entryTreatment" placeholder="診断、次回予約など"></label>
       </div>
+      <section class="medicine-entry-area" id="medicineFields" hidden>
+        <div class="medicine-entry-heading"><strong>薬の登録</strong><span>薬を1つずつ追加してください。</span></div>
+        <div class="medicine-entry-controls">
+          <input id="medicineNameInput" type="text" maxlength="120" placeholder="薬の名前・用量など">
+          <button type="button" class="pet-secondary" id="addMedicineButton">＋ 薬を追加</button>
+        </div>
+        <ul class="medicine-pending-list" id="medicinePendingList"></ul>
+      </section>
       <div class="photo-upload-area">
         <div class="photo-upload-copy"><strong>写真を添付</strong><span>患部・皮膚の様子・診療明細など。複数選択できます。</span></div>
         <label class="photo-pick-button">📷 写真を選ぶ<input id="entryPhotos" type="file" accept="image/*" multiple></label>
