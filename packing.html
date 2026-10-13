@@ -34,8 +34,12 @@
         <button class="family-button secondary" id="reset" type="button">チェックをリセット</button>
       </div>
       <div class="family-progress"><div id="bar"></div></div>
+      <div class="family-form" style="margin-bottom:12px">
+        <label for="selectedCategory"><strong>カテゴリ</strong></label>
+        <select id="selectedCategory" class="family-input" aria-label="表示する持ち物カテゴリ"><option value="">未分類</option></select>
+      </div>
       <form id="addForm" class="family-form">
-        <input id="newItem" class="family-input" placeholder="チェックリストに持ち物を追加" maxlength="120" aria-label="持ち物" required>
+        <input id="newItem" class="family-input" placeholder="選択中のカテゴリに持ち物を追加" maxlength="120" aria-label="持ち物" required>
         <button class="family-button" id="addItem" type="submit">＋ 追加</button>
       </form>
       <div id="items" class="family-list" aria-live="polite"></div>
