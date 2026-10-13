@@ -5,3 +5,15 @@
 @media(max-width:380px){.family-hero-icon{display:none}.family-day{min-height:55px}.family-day small{font-size:7px}}
 
 .family-divider{height:1px;background:#efefeb;margin:20px 0;}
+
+/* カテゴリ登録モーダル */
+.family-modal-backdrop{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(25,35,33,.42);backdrop-filter:blur(3px)}
+.family-modal-backdrop[hidden]{display:none}
+.family-modal{width:min(100%,520px);max-height:min(82vh,720px);overflow:auto;background:#fff;border-radius:18px;padding:22px;box-shadow:0 18px 60px rgba(0,0,0,.22)}
+.family-modal-heading{display:flex;align-items:flex-start;gap:14px;justify-content:space-between;margin-bottom:18px}
+.family-modal-heading h2{font-size:18px;margin:0 0 6px;color:#333}
+.family-modal-heading p{font-size:12px;color:#888;line-height:1.6;margin:0}
+.family-modal-close{flex:0 0 auto;width:34px;height:34px;border:0;border-radius:50%;background:#f2f4f2;color:#52615e;font-size:25px;line-height:1;cursor:pointer}
+.family-modal-subtitle{font-size:13px;margin:8px 0 4px;color:#555}
+.family-modal .family-form{margin-bottom:18px}
+@media(max-width:760px){.family-modal-backdrop{align-items:flex-end;padding:10px 10px calc(10px + env(safe-area-inset-bottom))}.family-modal{max-height:82vh;border-radius:18px;padding:19px}.family-modal .family-form{display:grid;grid-template-columns:1fr auto}.family-modal .family-form .family-input{min-width:0;width:100%}}

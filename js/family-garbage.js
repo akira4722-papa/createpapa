@@ -12,5 +12,11 @@ document.addEventListener('familydb-ready', () => {
   document.getElementById('prev').onclick=()=>{month.setMonth(month.getMonth()-1);render();};document.getElementById('next').onclick=()=>{month.setMonth(month.getMonth()+1);render();};
   document.getElementById('addForm').addEventListener('submit',async e=>{e.preventDefault();const dates=bulk?[...pending].sort():(selectedDate?[selectedDate]:[]);if(!dates.length){d.toast('カレンダーで日付を選択してください');return;}if(!type.value){d.toast('ごみカテゴリを先に登録してください');return;}try{for(const date of dates){if(!rows.some(x=>x.collection_date===date&&x.collection_type===type.value))await d.insert('family_garbage',{collection_date:date,collection_type:type.value});}pending.clear();await load();d.toast('収集日を登録しました');}catch(err){console.error(err);d.toast('登録できませんでした');}});
   document.getElementById('categoryForm').addEventListener('submit',async e=>{e.preventDefault();const input=document.getElementById('newCategory'),name=input.value.trim();if(!name)return;if(categories.some(c=>c.name.toLocaleLowerCase()===name.toLocaleLowerCase())){d.toast('同じ名前のカテゴリがあります');return;}try{await d.insert('family_garbage_categories',{name,sort_order:categories.length});input.value='';await load();type.value=name;d.toast('ごみカテゴリを追加しました');}catch(err){console.error(err);d.toast('カテゴリを追加できませんでした');}});
+  const modal=document.getElementById('categoryModal'),openModal=document.getElementById('openCategoryModal');
+  function closeModal(){modal.hidden=true;}
+  openModal.onclick=()=>{modal.hidden=false;document.getElementById('newCategory').focus();};
+  modal.querySelectorAll('[data-close-category-modal]').forEach(b=>b.onclick=closeModal);
+  modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)closeModal();});
   document.getElementById('bulkSelection').hidden=true;load();
 });
