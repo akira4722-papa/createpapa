@@ -14,12 +14,12 @@ document.addEventListener('familydb-ready', async () => {
 
   function categoryName(id) {
     const category = categories.find(c => String(c.id) === String(id));
-    return category ? category.name : '未分類';
+    return category ? category.name : 'カテゴリ未選択';
   }
 
   function renderCategorySelect(preferredValue) {
     const oldValue = preferredValue !== undefined ? String(preferredValue ?? '') : selectedCategory.value;
-    selectedCategory.innerHTML = '<option value="">未分類</option>' + categories.map(c =>
+    selectedCategory.innerHTML = '<option value="">カテゴリを選択</option>' + categories.map(c =>
       `<option value="${d.esc(c.id)}">${d.esc(c.name)}</option>`
     ).join('');
     const exists = [...selectedCategory.options].some(option => option.value === oldValue);
@@ -61,13 +61,11 @@ document.addEventListener('familydb-ready', async () => {
 
   function renderItems() {
     const currentId = selectedCategoryId();
-    const visibleRows = rows.filter(item => currentId === null
-      ? item.category_id == null || item.category_id === ''
-      : String(item.category_id) === String(currentId));
+    const visibleRows = currentId === null ? [] : rows.filter(item => String(item.category_id) === String(currentId));
     const checked = visibleRows.filter(item => item.checked).length;
-    document.getElementById('progress').textContent = `${checked} / ${visibleRows.length} 準備OK（${categoryName(currentId)}）`;
+    document.getElementById('progress').textContent = currentId === null ? 'カテゴリを選択してください' : `${checked} / ${visibleRows.length} 準備OK（${categoryName(currentId)}）`;
     document.getElementById('bar').style.width = `${visibleRows.length ? checked / visibleRows.length * 100 : 0}%`;
-    items.innerHTML = visibleRows.map(item => `
+    items.innerHTML = currentId === null ? '<p class="family-muted">先にカテゴリを登録してください。</p>' : visibleRows.map(item => `
       <div class="family-list-row packing-item-row">
         <div class="packing-item-main">
           <label><input type="checkbox" data-check="${d.esc(item.id)}" ${item.checked ? 'checked' : ''}> ${d.esc(item.name)}</label>
@@ -112,6 +110,7 @@ document.addEventListener('familydb-ready', async () => {
     const input = document.getElementById('newItem');
     const name = input.value.trim();
     if (!name) return;
+    if (selectedCategoryId() === null) { d.toast('先にカテゴリを登録してください'); return; }
     try {
       await d.insert('family_packing_items', {
         name,
@@ -131,9 +130,7 @@ document.addEventListener('familydb-ready', async () => {
   document.getElementById('reset').onclick = async () => {
     try {
       const currentId = selectedCategoryId();
-      const visibleRows = rows.filter(item => currentId === null
-        ? item.category_id == null || item.category_id === ''
-        : String(item.category_id) === String(currentId));
+      const visibleRows = currentId === null ? [] : rows.filter(item => String(item.category_id) === String(currentId));
       for (const item of visibleRows) {
         if (item.checked) await d.update('family_packing_items', item.id, { checked: false });
       }
