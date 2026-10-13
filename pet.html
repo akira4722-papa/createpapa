@@ -51,7 +51,6 @@
         <button class="filter-chip" data-filter="daily">日々の様子</button>
         <button class="filter-chip" data-filter="symptom">異変・症状</button>
         <button class="filter-chip" data-filter="vet">通院</button>
-        <button class="filter-chip" data-filter="medicine">薬・処置</button>
       </div>
       <label class="journal-search"><span>⌕</span><input id="journalSearch" type="search" placeholder="記録を検索"></label>
     </div>
@@ -74,7 +73,7 @@
     <form id="entryForm">
       <div class="pet-form-grid">
         <label>日付<input type="date" id="entryDate" required></label>
-        <label>記録の種類<select id="entryType"><option value="daily">日々の様子</option><option value="symptom">異変・症状</option><option value="vet">通院</option><option value="medicine">薬・処置</option></select></label>
+        <label>記録の種類<select id="entryType"><option value="daily">日々の様子</option><option value="symptom">異変・症状</option><option value="vet">通院</option></select></label>
       </div>
       <label>タイトル<input id="entryTitle" maxlength="90" placeholder="例：食欲がいつもより少ない" required></label>
       <label>メモ<textarea id="entryBody" rows="4" placeholder="気づいたこと、症状が出た時間、先生からの説明など"></textarea></label>
