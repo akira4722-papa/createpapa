@@ -1289,34 +1289,18 @@ function renderMonthEvents() {
     container.innerHTML = "";
 
 
-    const year =
-        calendarDate.getFullYear();
-
-    const month =
-        calendarDate.getMonth();
-
-
-    const prefix =
-        `${year}-${String(
-            month + 1
-        ).padStart(2,"0")}`;
-
+    // 今日を含む未来の予定を、日付・時刻順に並べて直近4件表示します。
+    // 表示中の月ではなく、今日以降の予定全体から選びます。
+    const todayString = formatDate(new Date());
 
     const monthEvents =
-        events
-            .filter(
-                event =>
-                    event.date.startsWith(
-                        prefix
-                    )
+        [...events]
+            .filter(event => event.date >= todayString)
+            .sort((a, b) =>
+                a.date.localeCompare(b.date) ||
+                (a.time || "99:99").localeCompare(b.time || "99:99")
             )
-            .sort(
-                (a,b) =>
-                    a.date.localeCompare(
-                        b.date
-                    )
-            )
-            .slice(0,4);
+            .slice(0, 4);
 
 
     monthEvents.forEach(
